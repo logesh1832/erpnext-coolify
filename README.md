@@ -49,8 +49,12 @@ On the VPS:
 git clone <this-repo-url> erpnext-coolify
 cd erpnext-coolify
 docker compose up -d
-# wait 5-10 min, then open http://<server-ip>:8080
+# wait 5-10 min
 ```
+
+> The `frontend` service uses `expose: 8080` (internal only) so Coolify's reverse proxy
+> routes the domain to it. If you run **without** Coolify and need direct host access,
+> change `frontend` back to `ports: ["8080:8080"]` and open `http://<server-ip>:8080`.
 
 ---
 
