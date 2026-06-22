@@ -41,6 +41,23 @@ stack: the app, MariaDB database, Redis, background workers, scheduler and webso
 
 ---
 
+## Static demo page (`/mock-html`)
+
+The repo also serves a self-contained HTML demo (`mock-html/index.html`) at
+`https://erpnext.wisright.com/mock-html` via a small `nginx:alpine` service.
+
+To wire it up in Coolify:
+
+1. After deploying, open the **`mock-html`** service → **Domains**.
+2. Enter `https://erpnext.wisright.com/mock-html` (internal port **80**).
+3. Redeploy.
+
+Coolify routes the `/mock-html` path to this service and everything else to ERPNext —
+the longer path automatically takes priority, so the main app is unaffected. To change
+the page, replace `mock-html/index.html` and redeploy.
+
+---
+
 ## Deploy manually (without Coolify UI)
 
 On the VPS:

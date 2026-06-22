@@ -126,6 +126,19 @@ services:
     expose:
       - "8080"
 
+  mock-html:
+    image: nginx:alpine
+    networks:
+      - frappe_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - ./mock-html/index.html:/usr/share/nginx/html/index.html:ro
+      - ./mock-html/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    expose:
+      - "80"
+
   queue-long:
     image: frappe/erpnext:v15
     networks:
