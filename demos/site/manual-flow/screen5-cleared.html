@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Gateway · Clearance Certificate</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Screen hint */
+  .screen-hint {
+    position: fixed; top: 8px; right: 12px; z-index: 9999;
+    background: rgba(15,23,42,0.92); backdrop-filter: blur(6px);
+    border: 1px solid rgba(13,148,136,0.3); border-radius: 8px;
+    padding: 8px 14px; max-width: 310px; font-size: 11.5px;
+    color: #94a3b8; line-height: 1.5; pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .screen-hint strong {
+    color: #2dd4bf; font-size: 10px; display: block;
+    margin-bottom: 3px; text-transform: uppercase; letter-spacing: .6px;
+  }
+
+  /* App Header */
+  .app-header {
+    background: #ffffff;
+    border-left: 4px solid #0d9488;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 24px 0 20px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .app-logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: #fff;
+    flex-shrink: 0;
+  }
+  .app-name {
+    font-size: 14.5px; font-weight: 600; color: #0f172a;
+  }
+  .app-name span { color: #0d9488; }
+  .app-sub {
+    font-size: 11.5px; color: #64748b;
+    border-left: 1px solid #e2e8f0;
+    padding-left: 12px; margin-left: 4px;
+  }
+
+  .header-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .user-info {
+    text-align: right;
+  }
+  .user-name {
+    font-size: 12.5px; font-weight: 600; color: #1e293b;
+    display: block;
+  }
+  .user-email {
+    font-size: 11px; color: #64748b;
+  }
+  .btn-dashboard {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px; font-weight: 500; color: #334155;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .btn-dashboard:hover { background: #e2e8f0; }
+
+  /* Main */
+  .main {
+    flex: 1;
+    padding: 32px 20px 48px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Certificate card */
+  .cert-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    max-width: 600px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* Banner */
+  .cert-banner {
+    background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+    padding: 22px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cert-banner-title {
+    font-size: 18px; font-weight: 700; color: #ffffff;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cert-banner-sub {
+    font-size: 12.5px; color: rgba(255,255,255,0.75);
+    font-weight: 400;
+  }
+
+  /* Details grid */
+  .cert-body {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .detail-cell {
+    padding: 11px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+  }
+  .detail-cell:nth-child(even) { border-right: none; }
+  .detail-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .detail-label {
+    font-size: 10.5px; font-weight: 600; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 3px;
+  }
+  .detail-value {
+    font-size: 13px; font-weight: 500; color: #1e293b;
+  }
+  .detail-value.teal   { color: #0d9488; font-weight: 700; }
+  .detail-value.mono   { font-family: "SF Mono","Fira Code",monospace; font-size: 11px; color: #475569; }
+  .detail-value.total  { font-size: 14px; font-weight: 700; color: #0f172a; }
+
+  /* Status pill */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #dcfce7; border: 1px solid #bbf7d0;
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11.5px; font-weight: 600; color: #166534;
+  }
+
+  /* QR Code panel */
+  .qr-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+  }
+  .qr-label {
+    font-size: 10.5px; font-weight: 600; color: #64748b;
+    text-transform: uppercase; letter-spacing: 0.6px;
+  }
+
+  /* 11x11 CSS QR grid */
+  .qr-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 14px);
+    grid-template-rows: repeat(11, 14px);
+    gap: 1.5px;
+  }
+  .qr-cell {
+    border-radius: 2px;
+  }
+  .on  { background: #0d9488; }
+  .off { background: #e2e8f0; }
+
+  /* Storage note */
+  .storage-note {
+    font-size: 11.5px; color: #64748b; text-align: center;
+    line-height: 1.55;
+    padding: 0 4px;
+  }
+  .storage-note strong { color: #0d9488; }
+
+  /* Action buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 0 28px 24px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.16s;
+    display: flex; align-items: center; gap: 6px;
+    text-decoration: none;
+    letter-spacing: 0.1px;
+  }
+  .btn-outline-teal {
+    background: transparent;
+    border: 1.5px solid #0d9488;
+    color: #0d9488;
+  }
+  .btn-outline-teal:hover { background: rgba(13,148,136,0.07); }
+
+  .btn-outline-dark {
+    background: transparent;
+    border: 1.5px solid #475569;
+    color: #475569;
+  }
+  .btn-outline-dark:hover { background: #f1f5f9; }
+
+  .btn-solid-teal {
+    background: linear-gradient(135deg, #0d9488, #0891b2);
+    border: none;
+    color: #ffffff;
+    box-shadow: 0 3px 12px rgba(13,148,136,0.25);
+    margin-left: auto;
+  }
+  .btn-solid-teal:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(13,148,136,0.3); }
+  .btn-solid-teal:active { transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Screen hint -->
+<div class="screen-hint">
+  <strong>📍 Cloud Gateway Portal · Clearance Certificate</strong>
+  The portal stores the OTA clearance certificate and QR code against the client's account. They can download the cleared PDF, share it with the buyer, or use the portal dashboard to track all submitted invoices.
+</div>
+
+<!-- App Header -->
+<header class="app-header">
+  <div class="app-logo">
+    <div class="logo-icon">CG</div>
+    <div class="app-name"><span>Cloud</span> Gateway</div>
+    <div class="app-sub">E-Invoice Portal</div>
+  </div>
+  <div class="header-right">
+    <div class="user-info">
+      <span class="user-name">Horizon Trading LLC</span>
+      <span class="user-email">finance@horizontrading.om</span>
+    </div>
+    <button class="btn-dashboard">Dashboard</button>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="main">
+  <div class="cert-card">
+
+    <!-- Banner -->
+    <div class="cert-banner">
+      <div class="cert-banner-title">✅ OTA Clearance Certificate</div>
+      <div class="cert-banner-sub">MIP-2026-00031 · Horizon Trading LLC</div>
+    </div>
+
+    <!-- Details -->
+    <div class="cert-body">
+
+      <div class="details-grid">
+        <div class="detail-cell">
+          <div class="detail-label">Invoice No.</div>
+          <div class="detail-value" style="font-family:'SF Mono','Fira Code',monospace;font-size:12.5px;">MIP-2026-00031</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Clearance Reference</div>
+          <div class="detail-value teal" style="font-family:'SF Mono','Fira Code',monospace;font-size:13px;">OTA-CLR-2026-7291</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Seller</div>
+          <div class="detail-value">Horizon Trading LLC</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Buyer</div>
+          <div class="detail-value">Muscat Logistics Co.</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Grand Total</div>
+          <div class="detail-value total">OMR 1,522.500</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">VAT Amount</div>
+          <div class="detail-value total">OMR 72.500</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Cleared At</div>
+          <div class="detail-value">23 Jun 2026, 14:51:05</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Status</div>
+          <div class="detail-value">
+            <span class="status-pill">✅ OTA Cleared</span>
+          </div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">UUID</div>
+          <div class="detail-value mono">7b2e4f91-3c8a-4d12-a5e7-1f9b0c3d6e82</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">ASP</div>
+          <div class="detail-value">Fynamics Tax Solutions</div>
+        </div>
+      </div>
+
+      <!-- QR Code panel -->
+      <div class="qr-panel">
+        <div class="qr-label">OTA Clearance QR Code</div>
+        <!-- 11×11 QR-like CSS grid. Rows are listed top to bottom. -->
+        <!-- on=teal (#0d9488), off=light (#e2e8f0) -->
+        <!-- Finder squares in top-left, top-right, bottom-left corners -->
+        <div class="qr-grid">
+          <!-- Row 1: top-left finder top edge + top-right finder top edge -->
+          <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+          <!-- Row 2 -->
+          <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+          <!-- Row 3 -->
+          <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+          <!-- Row 4 -->
+          <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+          <!-- Row 5: bottom edge of top finders -->
+          <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+          <!-- Row 6: separator -->
+          <div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div>
+          <!-- Row 7: data + bottom-left finder top -->
+          <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div>
+          <!-- Row 8 -->
+          <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div>
+          <!-- Row 9 -->
+          <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div>
+          <!-- Row 10 -->
+          <div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell off"></div>
+          <!-- Row 11 -->
+          <div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div><div class="qr-cell off"></div><div class="qr-cell on"></div><div class="qr-cell on"></div>
+        </div>
+        <div class="storage-note">
+          This certificate is stored in your <strong>Cloud Gateway</strong> account and accessible from the Invoice Dashboard at any time.
+        </div>
+      </div>
+
+    </div><!-- /cert-body -->
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-outline-teal">↓ Download Cleared PDF</button>
+      <button class="btn btn-outline-dark">📊 View Dashboard</button>
+      <button class="btn btn-solid-teal" onclick="window.parent.postMessage({action:'goto', screen:2}, '*')">＋ New Invoice</button>
+    </div>
+
+  </div><!-- /cert-card -->
+</main>
+
+</body>
+</html>

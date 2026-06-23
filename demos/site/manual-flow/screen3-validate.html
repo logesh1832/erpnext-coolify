@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Gateway — Validation Engine</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── App bar ── */
+  .app-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #0f172a;
+    border-bottom: 1px solid rgba(13,148,136,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .app-bar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .brand-logo {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #0d9488, #0891b2);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .brand-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    letter-spacing: 0.1px;
+  }
+  .app-bar-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  .doc-id {
+    color: #2dd4bf;
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.3px;
+  }
+  .bar-sep { color: #334155; }
+  .step-badge {
+    background: rgba(13,148,136,0.15);
+    border: 1px solid rgba(13,148,136,0.35);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #2dd4bf;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+
+  /* ── Main content ── */
+  .main {
+    flex: 1;
+    padding: 28px 32px 120px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* ── Stat cards ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid transparent;
+  }
+  .stat-card.teal {
+    background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+    border-color: #99f6e4;
+  }
+  .stat-card.grey {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+  }
+  .stat-card.blue {
+    background: linear-gradient(135deg, #f0f9ff, #dbeafe);
+    border-color: #bfdbfe;
+  }
+  .stat-icon { font-size: 18px; margin-bottom: 6px; }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .stat-card.teal .stat-value { color: #0d9488; }
+  .stat-card.grey .stat-value  { color: #475569; }
+  .stat-card.blue .stat-value  { color: #1d4ed8; }
+  .stat-label { font-size: 12px; font-weight: 500; margin-top: 2px; }
+  .stat-card.teal .stat-label { color: #0f766e; }
+  .stat-card.grey .stat-label  { color: #64748b; }
+  .stat-card.blue .stat-label  { color: #1e40af; }
+
+  /* ── Section header ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+  }
+
+  /* ── Validation check rows ── */
+  .checks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+  .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 13px 18px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .check-row.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .check-icon {
+    font-size: 17px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .check-body {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .check-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+  }
+  .check-detail {
+    font-size: 12px;
+    color: #64748b;
+    text-align: right;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+  .check-pill {
+    display: inline-block;
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    border-radius: 20px;
+    padding: 1px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0d9488;
+    font-family: "SF Mono", "Fira Mono", monospace;
+  }
+
+  /* ── XML panel ── */
+  .xml-panel {
+    background: #0a0f1e;
+    border: 1px solid rgba(13,148,136,0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .xml-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 18px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .xml-panel-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #2dd4bf;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .xml-panel-badge {
+    font-size: 11px;
+    background: rgba(13,148,136,0.15);
+    border: 1px solid rgba(13,148,136,0.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: #2dd4bf;
+    font-family: "SF Mono", "Fira Mono", monospace;
+  }
+  .xml-code {
+    padding: 20px 22px;
+    font-family: "SF Mono", "Fira Mono", "Cascadia Code", monospace;
+    font-size: 12.5px;
+    line-height: 1.75;
+    overflow-x: auto;
+    white-space: pre;
+    color: #e2e8f0;
+  }
+
+  /* XML syntax colours: tag names teal, attr names blue, attr values green, text white */
+  .x-decl  { color: #64748b; }
+  .x-tag   { color: #2dd4bf; }
+  .x-attr  { color: #60a5fa; }
+  .x-val   { color: #4ade80; }
+  .x-text  { color: #f1f5f9; }
+
+  /* ── Bottom action bar ── */
+  .action-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .action-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0d9488;
+  }
+  .action-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+    50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0.06); }
+  }
+  .btn-submit {
+    background: linear-gradient(135deg, #0d9488, #0891b2);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 11px 26px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.2px;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 4px 14px rgba(13,148,136,0.35);
+  }
+  .btn-submit:hover  { opacity: 0.92; transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); }
+
+  /* ── Screen hint ── */
+  .screen-hint {
+    position: fixed;
+    top: 8px; right: 12px;
+    z-index: 9999;
+    background: rgba(15,23,42,0.92);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(13,148,136,0.3);
+    border-radius: 8px;
+    padding: 8px 14px;
+    max-width: 310px;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.5;
+    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .screen-hint strong {
+    color: #2dd4bf;
+    font-size: 10px;
+    display: block;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Screen hint -->
+<div class="screen-hint">
+  <strong>📍 Cloud Gateway Portal · Validation Engine</strong>
+  Our portal's built-in validation engine checks all 73 OTA fields against Oman's Fawtara rules before generating the UBL 2.1 XML. No invalid invoice ever reaches the ASP or OTA.
+</div>
+
+<!-- App bar -->
+<header class="app-bar">
+  <div class="app-bar-brand">
+    <div class="brand-logo">CG</div>
+    <span class="brand-name">Cloud Gateway</span>
+  </div>
+  <div class="app-bar-center">
+    <span class="doc-id">MIP-2026-00031</span>
+    <span class="bar-sep">·</span>
+    <span>Validation</span>
+  </div>
+  <div class="step-badge">Step 3 of 5</div>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Stat cards -->
+  <div class="stat-row">
+    <div class="stat-card teal">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value">14 / 14</div>
+      <div class="stat-label">Mandatory Fields Valid</div>
+    </div>
+    <div class="stat-card grey">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value">9 / 59</div>
+      <div class="stat-label">Optional Fields Filled</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value">73</div>
+      <div class="stat-label">Total OTA Fields Checked</div>
+    </div>
+  </div>
+
+  <!-- Validation checks -->
+  <div class="section-header">
+    <span class="section-title">Validation Checks</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="checks-list">
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">Invoice number format valid</span>
+        <span class="check-detail"><span class="check-pill">MIP-2026-00031</span></span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">Issue date within OTA submission window</span>
+        <span class="check-detail">today ±7 days</span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">Seller VAT ID registered in OTA system</span>
+        <span class="check-detail"><span class="check-pill">OM9876543210</span></span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">Buyer VAT ID format valid</span>
+        <span class="check-detail"><span class="check-pill">OM1122334455</span></span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">VAT calculation verified</span>
+        <span class="check-detail">5% × OMR 1,450.000 = OMR 72.500 ✓</span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">Line item totals balance</span>
+        <span class="check-detail">850.000 + 600.000 = 1,450.000 ✓</span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">Invoice Type Code 380 (Standard Invoice) — supported by OTA</span>
+        <span class="check-detail"><span class="check-pill">Code 380</span></span>
+      </div>
+    </div>
+
+    <div class="check-row">
+      <span class="check-icon">✅</span>
+      <div class="check-body">
+        <span class="check-name">UBL 2.1 XML schema validation passed</span>
+        <span class="check-detail">0 errors</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- UBL XML Preview -->
+  <div class="section-header">
+    <span class="section-title">Generated UBL 2.1 XML Preview</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="xml-panel">
+    <div class="xml-panel-header">
+      <span class="xml-panel-title">UBL 2.1 XML — Ready for ASP Signing</span>
+      <span class="xml-panel-badge">MIP-2026-00031</span>
+    </div>
+    <div class="xml-code"><span class="x-decl">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="x-tag">&lt;Invoice</span> <span class="x-attr">xmlns</span>=<span class="x-val">"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"</span>
+         <span class="x-attr">xmlns:cac</span>=<span class="x-val">"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"</span>
+         <span class="x-attr">xmlns:cbc</span>=<span class="x-val">"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"</span><span class="x-tag">&gt;</span>
+  <span class="x-tag">&lt;cbc:ID&gt;</span><span class="x-text">MIP-2026-00031</span><span class="x-tag">&lt;/cbc:ID&gt;</span>
+  <span class="x-tag">&lt;cbc:IssueDate&gt;</span><span class="x-text">2026-06-23</span><span class="x-tag">&lt;/cbc:IssueDate&gt;</span>
+  <span class="x-tag">&lt;cbc:InvoiceTypeCode&gt;</span><span class="x-text">380</span><span class="x-tag">&lt;/cbc:InvoiceTypeCode&gt;</span>
+  <span class="x-tag">&lt;cbc:DocumentCurrencyCode&gt;</span><span class="x-text">OMR</span><span class="x-tag">&lt;/cbc:DocumentCurrencyCode&gt;</span>
+  <span class="x-tag">&lt;cac:AccountingSupplierParty&gt;</span>
+    <span class="x-tag">&lt;cac:Party&gt;</span>
+      <span class="x-tag">&lt;cac:PartyName&gt;</span><span class="x-tag">&lt;cbc:Name&gt;</span><span class="x-text">Horizon Trading LLC</span><span class="x-tag">&lt;/cbc:Name&gt;</span><span class="x-tag">&lt;/cac:PartyName&gt;</span>
+      <span class="x-tag">&lt;cac:PartyTaxScheme&gt;</span><span class="x-tag">&lt;cbc:CompanyID&gt;</span><span class="x-text">OM9876543210</span><span class="x-tag">&lt;/cbc:CompanyID&gt;</span><span class="x-tag">&lt;/cac:PartyTaxScheme&gt;</span>
+    <span class="x-tag">&lt;/cac:Party&gt;</span>
+  <span class="x-tag">&lt;/cac:AccountingSupplierParty&gt;</span>
+  <span class="x-tag">&lt;cac:LegalMonetaryTotal&gt;</span>
+    <span class="x-tag">&lt;cbc:TaxExclusiveAmount</span> <span class="x-attr">currencyID</span>=<span class="x-val">"OMR"</span><span class="x-tag">&gt;</span><span class="x-text">1450.000</span><span class="x-tag">&lt;/cbc:TaxExclusiveAmount&gt;</span>
+    <span class="x-tag">&lt;cbc:TaxInclusiveAmount</span> <span class="x-attr">currencyID</span>=<span class="x-val">"OMR"</span><span class="x-tag">&gt;</span><span class="x-text">1522.500</span><span class="x-tag">&lt;/cbc:TaxInclusiveAmount&gt;</span>
+    <span class="x-tag">&lt;cbc:PayableAmount</span> <span class="x-attr">currencyID</span>=<span class="x-val">"OMR"</span><span class="x-tag">&gt;</span><span class="x-text">1522.500</span><span class="x-tag">&lt;/cbc:PayableAmount&gt;</span>
+  <span class="x-tag">&lt;/cac:LegalMonetaryTotal&gt;</span>
+<span class="x-tag">&lt;/Invoice&gt;</span></div>
+  </div>
+
+</main>
+
+<!-- Bottom action bar -->
+<div class="action-bar">
+  <div class="action-status">
+    <div class="action-dot"></div>
+    All validations passed — ready to submit to OTA
+  </div>
+  <button class="btn-submit" onclick="window.parent.postMessage({action:'next'}, '*')">
+    Confirm &amp; Submit to OTA
+    <span style="font-size:16px">→</span>
+  </button>
+</div>
+
+<script>
+  // Staggered fadeUp animation — 0.15s per row
+  document.querySelectorAll('.check-row').forEach(function(row, i) {
+    setTimeout(function() { row.classList.add('visible'); }, 120 + i * 150);
+  });
+</script>
+
+</body>
+</html>

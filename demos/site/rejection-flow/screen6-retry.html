@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen 6 — Retry Submission</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0f1e;
+    color: #e2e8f0;
+    min-height: 100vh;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding-bottom: 70px;
+  }
+
+  /* ── App Bar ── */
+  .app-bar {
+    background: #0d1829;
+    border-bottom: 1px solid #1e3a5f;
+    height: 52px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .app-bar-logo {
+    background: #0d9488;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+  }
+  .app-bar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+    letter-spacing: 0.2px;
+  }
+  .app-bar-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #10b981;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── Animations ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  .pulsing { animation: pulse 1.5s ease-in-out infinite; }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(139,92,246,0.3);
+    border-top-color: #a78bfa;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  @keyframes arrowPulse {
+    0%, 100% { opacity: 0.35; }
+    50%       { opacity: 1; }
+  }
+  .arrow-pending { animation: arrowPulse 1.2s ease-in-out infinite; }
+
+  /* ── Main ── */
+  .main { padding: 24px; max-width: 900px; margin: 0 auto; }
+
+  /* ── Screen Hint ── */
+  .hint {
+    background: rgba(13,148,136,0.06);
+    border: 1px solid rgba(13,148,136,0.3);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 12.5px;
+    color: #94a3b8;
+    line-height: 1.6;
+    position: relative;
+    margin-bottom: 28px;
+  }
+  .hint-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2dd4bf;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .hint strong { color: #2dd4bf; }
+
+  /* ── Section Title ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Pipeline ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 32px 0;
+    flex-wrap: wrap;
+  }
+
+  .pipeline-node {
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 155px;
+    flex-shrink: 0;
+  }
+
+  .node-cg {
+    background: rgba(13,148,136,0.12);
+    border: 1.5px solid #0d9488;
+  }
+  .node-asp {
+    background: rgba(139,92,246,0.12);
+    border: 1.5px solid #7c3aed;
+  }
+  .node-ota {
+    background: rgba(16,185,129,0.06);
+    border: 1.5px solid #374151;
+  }
+
+  .node-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+  }
+  .icon-cg  { background: #0d9488; color: #fff; }
+  .icon-asp { background: #7c3aed; color: #fff; }
+  .icon-ota { background: #1e293b; color: #64748b; }
+
+  .node-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+  }
+  .node-sub {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+  .node-sub-muted { color: #4b5563; }
+
+  .node-badge {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+  .badge-teal { background: rgba(13,148,136,0.18); color: #2dd4bf; }
+  .badge-grey { background: rgba(255,255,255,0.06); color: #64748b; }
+
+  .pipeline-arrow {
+    font-size: 24px;
+    font-weight: 300;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .arrow-done    { color: #10b981; }
+  .arrow-waiting { color: #4b5563; }
+
+  /* ── Activity Log ── */
+  .log-box {
+    background: #0a0f1e;
+    border: 1px solid #2d3a4f;
+    border-radius: 10px;
+    padding: 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    margin-top: 8px;
+  }
+  .log-row { display: flex; gap: 10px; }
+  .log-ts   { color: #475569; white-space: nowrap; flex-shrink: 0; }
+  .log-icon { flex-shrink: 0; width: 18px; text-align: center; }
+  .log-text { color: #94a3b8; }
+  .log-ok   { color: #34d399; }
+  .log-wait { color: #f59e0b; }
+
+  /* ── Retry Details Card ── */
+  .details-card {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 8px;
+  }
+  .details-divider {
+    border: none;
+    border-top: 1px solid #1e293b;
+    margin: 12px 0;
+  }
+  .details-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    row-gap: 10px;
+    column-gap: 16px;
+  }
+  .detail-label {
+    color: #64748b;
+    font-size: 12px;
+    padding-top: 1px;
+  }
+  .detail-value {
+    color: #e2e8f0;
+    font-size: 13px;
+  }
+  .detail-value-amber { color: #f59e0b; font-weight: 600; }
+
+  /* ── Section wrapper ── */
+  .section { margin-bottom: 28px; }
+
+  /* ── Bottom Bar ── */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #0d1829;
+    border-top: 1px solid #1e3a5f;
+    height: 60px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 50;
+  }
+  .bottom-info {
+    font-size: 12.5px;
+    color: #64748b;
+  }
+  .bottom-info strong { color: #94a3b8; }
+  .btn-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-back {
+    background: transparent;
+    color: #64748b;
+    border: 1px solid #2d3a4f;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-back:hover { color: #94a3b8; border-color: #475569; }
+  .btn-next {
+    background: #10b981;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .btn-next:hover { background: #059669; }
+
+  /* countdown badge */
+  .countdown {
+    font-size: 11px;
+    color: #10b981;
+    margin-left: 4px;
+    opacity: 0.75;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── App Bar ── -->
+<header class="app-bar">
+  <span class="app-bar-logo">CG</span>
+  <span class="app-bar-title">Retry Submission — Attempt #1</span>
+  <span class="app-bar-status">
+    <span class="status-dot"></span>
+    Submitting...
+  </span>
+</header>
+
+<div class="main">
+
+  <!-- ── Screen Hint ── -->
+  <div class="hint">
+    <div class="hint-label">📍 Cloud Gateway · Retry Submission</div>
+    The corrected invoice is being re-submitted. Cloud Gateway forwards to <strong>Fynamics ASP</strong> (third-party digital signing service) who re-signs and submits to <strong>OTA Fawtara</strong>.
+  </div>
+
+  <!-- ── Section 1: Pipeline ── -->
+  <div class="section">
+    <div class="section-title">Submission Pipeline</div>
+
+    <div class="pipeline">
+
+      <!-- Cloud Gateway -->
+      <div class="pipeline-node node-cg">
+        <div>
+          <div class="node-icon icon-cg">CG</div>
+        </div>
+        <div class="node-label">Cloud Gateway</div>
+        <div class="node-sub">✅ Corrections Applied</div>
+        <span class="node-badge badge-teal">OUR PLATFORM</span>
+      </div>
+
+      <!-- Arrow CG → ASP (done) -->
+      <div class="pipeline-arrow arrow-done" title="Forwarded">→</div>
+
+      <!-- Fynamics ASP -->
+      <div class="pipeline-node node-asp">
+        <div>
+          <div class="node-icon icon-asp">F</div>
+        </div>
+        <div class="node-label">Fynamics ASP</div>
+        <div class="node-sub pulsing">✍️ Re-signing...<span class="spinner"></span></div>
+        <span class="node-badge badge-grey">3RD PARTY ASP</span>
+      </div>
+
+      <!-- Arrow ASP → OTA (pending) -->
+      <div class="pipeline-arrow arrow-waiting arrow-pending" title="In progress">→</div>
+
+      <!-- OTA Fawtara -->
+      <div class="pipeline-node node-ota">
+        <div>
+          <div class="node-icon icon-ota">OTA</div>
+        </div>
+        <div class="node-label" style="color:#6b7280;">OTA Fawtara</div>
+        <div class="node-sub node-sub-muted">⏳ Awaiting...</div>
+        <span class="node-badge badge-grey" style="opacity:0.5;">AUTHORITY</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Section 2: Activity Log ── -->
+  <div class="section">
+    <div class="section-title">📋 Retry Activity Log</div>
+    <div class="log-box">
+
+      <div class="log-row">
+        <span class="log-ts">[09:15:02]</span>
+        <span class="log-icon log-ok">✅</span>
+        <span class="log-text">Invoice <span class="log-ok">SINV-2026-00089</span> loaded from Cloud Gateway queue</span>
+      </div>
+
+      <div class="log-row">
+        <span class="log-ts">[09:15:02]</span>
+        <span class="log-icon log-ok">✅</span>
+        <span class="log-text"><span class="log-ok">3 auto-corrections</span> applied (VAT format, address, type code)</span>
+      </div>
+
+      <div class="log-row">
+        <span class="log-ts">[09:15:03]</span>
+        <span class="log-icon log-ok">✅</span>
+        <span class="log-text">UBL 2.1 XML re-generated with corrections</span>
+      </div>
+
+      <div class="log-row">
+        <span class="log-ts">[09:15:03]</span>
+        <span class="log-icon log-ok">✅</span>
+        <span class="log-text">Forwarded to <span class="log-ok">Fynamics ASP</span> for digital signing</span>
+      </div>
+
+      <div class="log-row pulsing">
+        <span class="log-ts">[09:15:04]</span>
+        <span class="log-icon log-wait">⏳</span>
+        <span class="log-text log-wait">Fynamics ASP signing with OTA-certified certificate...</span>
+      </div>
+
+      <div class="log-row pulsing">
+        <span class="log-ts">[09:15:06]</span>
+        <span class="log-icon log-wait">⏳</span>
+        <span class="log-text log-wait">Signed document submitted to OTA Fawtara <span style="color:#64748b;">(POST /fawtara/v1/invoices)</span></span>
+      </div>
+
+      <div class="log-row pulsing">
+        <span class="log-ts">[09:15:07]</span>
+        <span class="log-icon log-wait">⏳</span>
+        <span class="log-text log-wait">OTA Fawtara validating — awaiting response...</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Section 3: Retry Details ── -->
+  <div class="section">
+    <div class="section-title">Retry Details</div>
+    <div class="details-card">
+      <hr class="details-divider">
+      <div class="details-grid">
+
+        <span class="detail-label">Invoice</span>
+        <span class="detail-value">SINV-2026-00089</span>
+
+        <span class="detail-label">Attempt</span>
+        <span class="detail-value">Retry #1 <span style="color:#64748b; font-size:12px;">(Original: 23 Jun 2026, 09:14:33)</span></span>
+
+        <span class="detail-label">Corrections</span>
+        <span class="detail-value" style="color:#34d399; font-weight:600;">3 applied automatically</span>
+
+        <span class="detail-label">Submitted</span>
+        <span class="detail-value">23 Jun 2026, 09:15:06</span>
+
+        <span class="detail-label">Status</span>
+        <span class="detail-value detail-value-amber pulsing">Awaiting OTA response...</span>
+
+        <span class="detail-label">ASP</span>
+        <span class="detail-value">Fynamics Tax Solutions <span style="color:#64748b; font-size:11px;">(cert: CG-OTA-2026-CERT)</span></span>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ── Bottom Bar ── -->
+<div class="bottom-bar">
+  <div class="bottom-info">
+    <strong>Retry #1 in progress</strong> — Signed by Fynamics ASP
+  </div>
+  <div class="btn-nav">
+    <button class="btn-back" onclick="window.parent.postMessage({action:'prev'}, '*')">← Back</button>
+    <button class="btn-next" id="btnNext" onclick="goNext()">
+      View OTA Clearance →<span class="countdown" id="countdown">(8s)</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  function goNext() {
+    window.parent.postMessage({ action: 'next' }, '*');
+  }
+
+  // Auto-navigate after 8 seconds, with countdown display
+  var remaining = 8;
+  var countdownEl = document.getElementById('countdown');
+  var interval = setInterval(function () {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(interval);
+      countdownEl.textContent = '';
+      goNext();
+    } else {
+      countdownEl.textContent = '(' + remaining + 's)';
+    }
+  }, 1000);
+
+  // If user clicks manually, cancel the auto-navigate
+  document.getElementById('btnNext').addEventListener('click', function () {
+    clearInterval(interval);
+    countdownEl.textContent = '';
+  }, { once: true });
+</script>
+
+</body>
+</html>

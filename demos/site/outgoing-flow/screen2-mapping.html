@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Field Mapping Configuration — E-Invoice Gateway</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Plugin-specific overrides for this screen */
+    body {
+      background: #f1f5f9;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .plugin-chrome-header {
+      background: #0f172a;
+      padding: 0 28px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #1e3a5f;
+      flex-shrink: 0;
+    }
+    .chrome-logo {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+    }
+    .chrome-logo-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: -0.3px;
+    }
+    .chrome-logo-sub {
+      font-size: 11px;
+      color: #64748b;
+      margin-left: 8px;
+    }
+    .chrome-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .connected-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #052e16;
+      color: #34d399;
+      border: 1px solid #166534;
+      border-radius: 999px;
+      padding: 3px 11px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .conn-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+    }
+    .chrome-company {
+      font-size: 12.5px;
+      color: #94a3b8;
+    }
+
+    /* Page title area */
+    .page-title-area {
+      background: #fff;
+      padding: 20px 28px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+    .page-title-area h1 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .page-title-area .subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .info-banner {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 7px;
+      padding: 9px 14px;
+      color: #1e40af;
+      font-size: 12.5px;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+    .info-banner .ib-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Scroll area */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 28px 0;
+      background: #f8fafc;
+    }
+
+    /* Table card */
+    .table-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px 10px 0 0;
+      overflow: hidden;
+    }
+
+    /* Table overrides */
+    .mapping-table th {
+      background: #f1f5f9;
+      padding: 9px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .mapping-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    .mapping-table tr:last-child td { border-bottom: none; }
+    .mapping-table tr:nth-child(even) td { background: #fafbfc; }
+    .mapping-table tr:nth-child(even):hover td { background: #f1f5f9; }
+    .mapping-table tr:nth-child(odd):hover td { background: #f8fafc; }
+
+    .field-tag-dark {
+      display: inline-block;
+      background: #0f172a;
+      color: #7dd3fc;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+      font-size: 11.5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #1e3a5f;
+    }
+    .field-desc-text {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+    .req-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      vertical-align: middle;
+    }
+    .arrow-col {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 17px;
+      width: 38px;
+    }
+    select.erp-field-select {
+      min-width: 205px;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+      font-size: 12px;
+      padding: 6px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      color: #1e293b;
+      background: #fff;
+      appearance: auto;
+      cursor: pointer;
+    }
+    select.erp-field-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+
+    /* Footer bar */
+    .mapping-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 28px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-top: 2px solid #e2e8f0;
+      border-radius: 0 0 10px 10px;
+      margin: 0 28px 20px;
+    }
+    .mapped-count-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #16a34a;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .footer-btn-group { display: flex; gap: 10px; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 E-Invoice Plugin · Field Mapping</strong>Map your ERPNext fields to the UBL 2.1 format required by Oman OTA. This one-time setup links your ERP data to the official invoice schema.</div>
+
+  <!-- ── Plugin Chrome Header ─────────────────────────── -->
+  <header class="plugin-chrome-header">
+    <div class="chrome-logo">
+      <span class="chrome-logo-name">⚡ E-Invoice Gateway</span>
+      <span class="chrome-logo-sub">ERPNext Connector v1.0</span>
+    </div>
+    <div class="chrome-right">
+      <span class="connected-pill">
+        <span class="conn-dot"></span>
+        Connected to: ERPNext
+      </span>
+      <span class="chrome-company">Company: Wisright Technologies LLC</span>
+    </div>
+  </header>
+
+  <!-- ── Page Title Area ──────────────────────────────── -->
+  <div class="page-title-area">
+    <h1>Field Mapping Configuration</h1>
+    <p class="subtitle">Map your ERPNext fields to Oman OTA mandatory fields. All 14 required fields must be mapped before invoices can be submitted.</p>
+    <div class="info-banner">
+      <span class="ib-icon">ℹ️</span>
+      <span><strong>ERPNext schema detected.</strong> 47 fields available for mapping. Pre-populated based on standard ERPNext field names — review and adjust as needed.</span>
+    </div>
+  </div>
+
+  <!-- ── Scrollable Table Area ────────────────────────── -->
+  <div class="scroll-area">
+    <div class="table-card">
+      <table class="mapping-table">
+        <thead>
+          <tr>
+            <th style="width:30%">Gateway Field</th>
+            <th class="req-col" style="width:70px;text-align:center">Required</th>
+            <th class="arrow-col" style="width:38px;text-align:center">→</th>
+            <th>ERPNext Field</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">seller_vat_id</span>
+              <div class="field-desc-text">Seller VAT Registration No.</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>company_tax_id</option>
+                <option>tax_id</option>
+                <option>company_gstin</option>
+                <option>custom_vat_number</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">seller_name</span>
+              <div class="field-desc-text">Seller Legal Entity Name</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>company</option>
+                <option>company_name</option>
+                <option>name</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">seller_address</span>
+              <div class="field-desc-text">Seller Registered Address</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>company_address</option>
+                <option>company_address_display</option>
+                <option>custom_company_address</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">buyer_vat_id</span>
+              <div class="field-desc-text">Buyer VAT Registration No.</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>customer.tax_id</option>
+                <option>tax_id</option>
+                <option>custom_buyer_vat</option>
+                <option>gst_category</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">buyer_name</span>
+              <div class="field-desc-text">Buyer Legal Entity Name</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>customer_name</option>
+                <option>customer</option>
+                <option>custom_buyer_name</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">buyer_address</span>
+              <div class="field-desc-text">Buyer Billing Address</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>billing_address_display</option>
+                <option>shipping_address_display</option>
+                <option>customer_address</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">invoice_number</span>
+              <div class="field-desc-text">Invoice Reference ID</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>name</option>
+                <option>custom_invoice_number</option>
+                <option>po_no</option>
+                <option>naming_series</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">invoice_date</span>
+              <div class="field-desc-text">Invoice Issue Date</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>posting_date</option>
+                <option>transaction_date</option>
+                <option>creation</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">invoice_type</span>
+              <div class="field-desc-text">OTA Document Type</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>STATIC: TAX_INVOICE</option>
+                <option>STATIC: CREDIT_NOTE</option>
+                <option>STATIC: DEBIT_NOTE</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">line_items</span>
+              <div class="field-desc-text">Invoice Line Items Array</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>items</option>
+                <option>(automatic — all item fields)</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">taxable_amount</span>
+              <div class="field-desc-text">Net Amount Before Tax</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>net_total</option>
+                <option>base_net_total</option>
+                <option>total</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">tax_amount</span>
+              <div class="field-desc-text">Total VAT / Tax Amount</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>total_taxes_and_charges</option>
+                <option>base_total_taxes_and_charges</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">total_amount</span>
+              <div class="field-desc-text">Grand Total incl. Tax</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>grand_total</option>
+                <option>base_grand_total</option>
+                <option>rounded_total</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="field-tag-dark">currency</span>
+              <div class="field-desc-text">Invoice Currency Code</div>
+            </td>
+            <td style="text-align:center"><span class="req-dot"></span></td>
+            <td class="arrow-col">→</td>
+            <td>
+              <select class="erp-field-select">
+                <option selected>currency</option>
+                <option>(fixed: OMR for Oman)</option>
+              </select>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div><!-- /.table-card -->
+  </div><!-- /.scroll-area -->
+
+  <!-- ── Mapping Footer Bar ───────────────────────────── -->
+  <div class="mapping-footer-bar">
+    <div class="mapped-count-label">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0">
+        <circle cx="10" cy="10" r="10" fill="#dcfce7"/>
+        <path d="M6 10l3 3 5-5" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      14 / 14 required fields mapped
+    </div>
+    <div class="footer-btn-group">
+      <button class="btn btn-grey" onclick="window.parent.postMessage({action:'next'},'*')">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="handleSave()">Save Configuration</button>
+    </div>
+  </div>
+
+  <script>
+    function handleSave() {
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.innerHTML = 'Saving… <span style="display:inline-block;animation:spin 0.7s linear infinite">⟳</span>';
+      setTimeout(() => {
+        window.parent.postMessage({ action: 'next' }, '*');
+      }, 800);
+    }
+  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+</body>
+</html>

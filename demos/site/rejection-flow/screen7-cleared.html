@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen 7 — Invoice Cleared</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0f1e;
+    color: #e2e8f0;
+    min-height: 100vh;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding-bottom: 70px;
+  }
+
+  /* ── App Bar ── */
+  .app-bar {
+    background: #0d1829;
+    border-bottom: 1px solid #1e293b;
+    height: 52px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-bar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2dd4bf;
+  }
+  .logo-badge {
+    background: #134e4a;
+    border: 1.5px solid #2dd4bf;
+    color: #2dd4bf;
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .app-bar-center {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    letter-spacing: 0.1px;
+  }
+  .app-bar-right {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ── Main Content ── */
+  .main {
+    padding: 24px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  /* ── Screen Hint ── */
+  .screen-hint {
+    position: absolute;
+    top: 60px;
+    right: 16px;
+    background: rgba(10, 15, 30, 0.95);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    max-width: 240px;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.5;
+    z-index: 90;
+  }
+  .screen-hint-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #34d399;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .screen-hint strong {
+    color: #34d399;
+  }
+
+  /* ── Confetti Row ── */
+  .confetti-row {
+    text-align: center;
+    font-size: 20px;
+    letter-spacing: 6px;
+    margin-bottom: 4px;
+    padding-top: 8px;
+    opacity: 0.75;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); opacity: 0.75; }
+    50% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ── Hero Banner ── */
+  .hero {
+    text-align: center;
+    padding: 24px 24px 24px;
+  }
+  .hero-icon {
+    font-size: 52px;
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+  .hero-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .hero-subtitle {
+    font-size: 15px;
+    color: #34d399;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .hero-note {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  /* ── Section Label ── */
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #475569;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  /* ── Certificate Card ── */
+  .cert-card {
+    background: #111827;
+    border: 1.5px solid #10b981;
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 540px;
+    margin: 0 auto 20px;
+  }
+  .cert-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1e293b;
+  }
+  .cert-header-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+  .cert-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .cert-grid {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 8px 16px;
+  }
+  .cert-label {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .cert-value {
+    color: #f1f5f9;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+  .cert-value.cleared {
+    color: #10b981;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .cert-value.asp {
+    color: #a78bfa;
+  }
+
+  /* ── Auto-Fix Summary ── */
+  .fix-card {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    max-width: 540px;
+    margin: 0 auto 20px;
+  }
+  .fix-card-header {
+    font-size: 13px;
+    font-weight: 700;
+    color: #34d399;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fix-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+    font-size: 13px;
+  }
+  .fix-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .fix-check {
+    color: #10b981;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .fix-field {
+    color: #94a3b8;
+    font-weight: 600;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+  .fix-before {
+    color: #f87171;
+    text-decoration: line-through;
+    margin-right: 6px;
+    font-family: monospace;
+    font-size: 12px;
+  }
+  .fix-arrow {
+    color: #475569;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+  .fix-after {
+    color: #34d399;
+    font-weight: 600;
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  /* ── Timeline ── */
+  .timeline-card {
+    background: #0a0f1e;
+    border: 1px solid #2d3a4f;
+    border-radius: 10px;
+    padding: 16px 20px;
+    max-width: 540px;
+    margin: 0 auto 20px;
+  }
+  .timeline-header {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .tl-row {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: 12.5px;
+    font-family: monospace;
+    border-bottom: 1px solid rgba(45, 58, 79, 0.5);
+    align-items: flex-start;
+  }
+  .tl-row:last-child {
+    border-bottom: none;
+  }
+  .tl-time {
+    color: #475569;
+    flex-shrink: 0;
+    width: 55px;
+  }
+  .tl-icon {
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .tl-text {
+    color: #94a3b8;
+    flex: 1;
+    line-height: 1.5;
+  }
+  .tl-row.success .tl-text {
+    color: #34d399;
+    font-weight: 600;
+  }
+  .tl-row.error .tl-text {
+    color: #f87171;
+  }
+
+  /* ── ERPNext Sync Card ── */
+  .sync-card {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(45, 212, 191, 0.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+    max-width: 540px;
+    margin: 0 auto 20px;
+  }
+  .sync-header {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2dd4bf;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sync-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sync-list li {
+    font-size: 13px;
+    color: #94a3b8;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
+  }
+  .sync-list li::before {
+    content: "•";
+    color: #2dd4bf;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── Bottom Bar ── */
+  .bottom-bar {
+    background: #0d1829;
+    border-top: 1px solid #1e3a5f;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+  }
+  .bottom-bar-meta {
+    font-size: 12px;
+    color: #475569;
+  }
+  .bottom-bar-meta span {
+    color: #64748b;
+  }
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-secondary {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+  }
+  .btn-primary {
+    background: #0d9488;
+    color: #f0fdfa;
+  }
+</style>
+</head>
+<body>
+
+<!-- App Bar -->
+<div class="app-bar">
+  <div class="app-bar-logo">
+    <span class="logo-badge">CG</span>
+    Cloud Gateway
+  </div>
+  <div class="app-bar-center">Invoice Cleared ✓</div>
+  <div class="app-bar-right">Retry Successful</div>
+</div>
+
+<!-- Screen Hint -->
+<div class="screen-hint">
+  <div class="screen-hint-label">📍 Cloud Gateway · Retry Cleared</div>
+  OTA Fawtara accepted the corrected invoice on the first retry. The clearance certificate is automatically returned to ERPNext and stored in the invoice record.
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Confetti -->
+  <div class="confetti-row">✨ 🎉 ✨</div>
+
+  <!-- Hero Banner -->
+  <div class="hero">
+    <div class="hero-icon">✅</div>
+    <div class="hero-title">Invoice Cleared</div>
+    <div class="hero-subtitle">Retry Successful — Accepted by OTA Fawtara on first retry</div>
+    <div class="hero-note">Clearance certificate automatically stored in ERPNext</div>
+  </div>
+
+  <!-- Section 1: OTA Clearance Certificate -->
+  <div class="section-label">OTA Clearance Certificate</div>
+  <div class="cert-card">
+    <div class="cert-header">
+      <span class="cert-header-icon">🏛️</span>
+      <span class="cert-title">OTA Fawtara Clearance Certificate</span>
+    </div>
+    <div class="cert-grid">
+      <span class="cert-label">Invoice No:</span>
+      <span class="cert-value">SINV-2026-00089</span>
+
+      <span class="cert-label">OTA Ref:</span>
+      <span class="cert-value">OTA-CLR-2026-8847</span>
+
+      <span class="cert-label">Issue Date:</span>
+      <span class="cert-value">23 Jun 2026</span>
+
+      <span class="cert-label">Clearance Time:</span>
+      <span class="cert-value">09:15:09</span>
+
+      <span class="cert-label">Seller VAT:</span>
+      <span class="cert-value">OM-987654321-0</span>
+
+      <span class="cert-label">Buyer VAT:</span>
+      <span class="cert-value">OM-998877665-5 <span style="color:#64748b;font-weight:400;">(corrected)</span></span>
+
+      <span class="cert-label">Invoice Total:</span>
+      <span class="cert-value">OMR 2,441.250 (incl. VAT)</span>
+
+      <span class="cert-label">Status:</span>
+      <span class="cert-value cleared">CLEARED ✓</span>
+
+      <span class="cert-label">Retry Attempt:</span>
+      <span class="cert-value">#1 (auto-corrected)</span>
+
+      <span class="cert-label">ASP:</span>
+      <span class="cert-value asp">Fynamics Tax Solutions</span>
+    </div>
+  </div>
+
+  <!-- Section 2: Auto-Fix Summary -->
+  <div class="section-label">Auto-Fix Summary</div>
+  <div class="fix-card">
+    <div class="fix-card-header">
+      🔧 What Was Corrected
+    </div>
+
+    <div class="fix-row">
+      <span class="fix-check">✅</span>
+      <span class="fix-field">Buyer VAT:</span>
+      <span class="fix-before">OM9988776655</span>
+      <span class="fix-arrow">→</span>
+      <span class="fix-after">OM-998877665-5</span>
+    </div>
+
+    <div class="fix-row">
+      <span class="fix-check">✅</span>
+      <span class="fix-field">Buyer Street:</span>
+      <span class="fix-before">(empty)</span>
+      <span class="fix-arrow">→</span>
+      <span class="fix-after">Industrial Zone, Rusayl</span>
+    </div>
+
+    <div class="fix-row">
+      <span class="fix-check">✅</span>
+      <span class="fix-field">Invoice Type:</span>
+      <span class="fix-before">380</span>
+      <span class="fix-arrow">→</span>
+      <span class="fix-after">388</span>
+    </div>
+  </div>
+
+  <!-- Section 3: Timeline -->
+  <div class="section-label">Timeline of Events</div>
+  <div class="timeline-card">
+    <div class="tl-row">
+      <span class="tl-time">09:14:33</span>
+      <span class="tl-icon">📤</span>
+      <span class="tl-text">Invoice submitted to Cloud Gateway (Attempt #1)</span>
+    </div>
+    <div class="tl-row error">
+      <span class="tl-time">09:14:51</span>
+      <span class="tl-icon">❌</span>
+      <span class="tl-text">OTA Fawtara rejected — 3 validation errors</span>
+    </div>
+    <div class="tl-row">
+      <span class="tl-time">09:15:00</span>
+      <span class="tl-icon">🔧</span>
+      <span class="tl-text">Cloud Gateway auto-classified and fixed all 3 errors</span>
+    </div>
+    <div class="tl-row">
+      <span class="tl-time">09:15:06</span>
+      <span class="tl-icon">📤</span>
+      <span class="tl-text">Retry submitted via Fynamics ASP</span>
+    </div>
+    <div class="tl-row success">
+      <span class="tl-time">09:15:09</span>
+      <span class="tl-icon">✅</span>
+      <span class="tl-text">OTA Fawtara cleared — Clearance ref: OTA-CLR-2026-8847</span>
+    </div>
+  </div>
+
+  <!-- Section 4: ERPNext Sync -->
+  <div class="section-label">ERPNext Sync</div>
+  <div class="sync-card">
+    <div class="sync-header">
+      ✅ ERPNext Updated
+    </div>
+    <ul class="sync-list">
+      <li>Sales Invoice SINV-2026-00089 status → "Cleared by OTA"</li>
+      <li>OTA Clearance Ref OTA-CLR-2026-8847 stored in invoice</li>
+      <li>Clearance QR code attached to PDF</li>
+      <li>Buyer notified automatically</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <div class="bottom-bar-meta">
+    Cleared in <span>36 seconds</span> · <span>1 retry</span> · <span>3 auto-fixes applied</span>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-secondary"
+      onclick="window.parent.postMessage({action:'prev'}, '*')">
+      ← Back to Retry
+    </button>
+    <button class="btn btn-primary"
+      onclick="window.parent.location.href='../index.html'">
+      Back to Demo Hub →
+    </button>
+  </div>
+</div>
+
+</body>
+</html>

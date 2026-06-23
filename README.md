@@ -58,6 +58,26 @@ the page, replace `mock-html/index.html` and redeploy.
 
 ---
 
+## Multi-flow demo (`/demos`)
+
+A larger, self-contained walkthrough lives in `demos/site/` and is served at
+`https://erpnext.wisright.com/demos` by its own `nginx:alpine` service (`demos`).
+It is a landing page plus four interactive flows (outgoing, incoming, manual,
+rejection+retry), each an iframe shell that steps through screen HTML files. All
+paths are relative, so the whole tree serves correctly under the `/demos` prefix.
+
+To wire it up in Coolify:
+
+1. After deploying, open the **`demos`** service → **Domains**.
+2. Enter `https://erpnext.wisright.com/demos` (internal port **80**).
+3. Redeploy.
+
+Like `mock-html`, the files are baked into the image (no bind mounts) so it deploys
+cleanly. To change the demo, replace files under `demos/site/` and redeploy. Keep the
+flow folders together — `rejection-flow` reuses `outgoing-flow/styles.css`.
+
+---
+
 ## Deploy manually (without Coolify UI)
 
 On the VPS:

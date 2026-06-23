@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Screen 2 — OTA Rejection · Cloud Gateway</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0f1e;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #0d1829;
+      border-bottom: 1px solid #1e3a5f;
+      height: 52px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .appbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-square {
+      width: 30px;
+      height: 30px;
+      background: #0d9488;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: 0.2px;
+    }
+    .appbar-center-pill {
+      background: rgba(30, 58, 95, 0.6);
+      border: 1px solid #1e3a5f;
+      border-radius: 20px;
+      padding: 5px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.3px;
+    }
+    .appbar-center-pill span {
+      color: #e2e8f0;
+    }
+    .badge-rejected {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Screen hint ── */
+    .screen-hint {
+      position: fixed;
+      top: 64px;
+      right: 20px;
+      background: rgba(13, 24, 41, 0.97);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      max-width: 280px;
+      z-index: 200;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: #94a3b8;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .screen-hint .hint-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #f87171;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .screen-hint strong {
+      color: #f87171;
+    }
+
+    /* ── Main content ── */
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 24px 0 24px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f87171;
+      display: inline-block;
+    }
+
+    /* ── Terminal block ── */
+    .terminal-block {
+      background: #0a0f1e;
+      border: 1px solid #2d3a4f;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.7;
+    }
+    .terminal-block .line {
+      display: flex;
+      gap: 12px;
+    }
+    .terminal-block .key {
+      color: #4a5f7a;
+      min-width: 110px;
+      flex-shrink: 0;
+    }
+    .terminal-block .val {
+      color: #94a3b8;
+    }
+    .terminal-block .val.red {
+      color: #f87171;
+      font-weight: 700;
+    }
+    .terminal-block .val.teal {
+      color: #2dd4bf;
+    }
+    .terminal-block .val.muted {
+      color: #64748b;
+    }
+    .terminal-block .divider {
+      border: none;
+      border-top: 1px solid #1e2d42;
+      margin: 10px 0;
+    }
+    .terminal-http-line {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .http-proto {
+      color: #4a5f7a;
+      font-size: 12px;
+    }
+    .http-status {
+      color: #f87171;
+      font-weight: 700;
+      font-size: 13.5px;
+    }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .section-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f87171;
+    }
+    .error-count-badge {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 10px;
+    }
+
+    /* ── Error cards ── */
+    .error-card {
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .error-card.amber {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+    .error-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .code-badge {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+    .code-badge.amber {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+    .field-path {
+      font-family: 'Courier New', monospace;
+      font-size: 10.5px;
+      color: #64748b;
+      word-break: break-all;
+    }
+    .error-message {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+    .error-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .error-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+    }
+    .meta-label {
+      color: #4a5f7a;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+    }
+    .meta-value {
+      color: #94a3b8;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+    }
+    .meta-value.empty {
+      color: #4a5f7a;
+      font-style: italic;
+    }
+    .autofix-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+    }
+    .autofix-pill.amber {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.25);
+      color: #fbbf24;
+    }
+
+    /* ── JSON block ── */
+    .json-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .json-header h4 {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .collapse-btn {
+      font-size: 11px;
+      color: #4a5f7a;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .collapse-btn:hover { color: #94a3b8; }
+    .json-block {
+      background: #0a0f1e;
+      border: 1px solid #2d3a4f;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .j-key   { color: #2dd4bf; }
+    .j-str   { color: #a3e635; }
+    .j-num   { color: #fb923c; }
+    .j-bool  { color: #f87171; }
+    .j-null  { color: #64748b; font-style: italic; }
+
+    /* ── Bottom bar ── */
+    .bottom-bar {
+      background: #0d1829;
+      border-top: 1px solid #1e3a5f;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+    .bottom-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .back-btn {
+      background: transparent;
+      border: 1px solid #1e3a5f;
+      color: #64748b;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .back-btn:hover { border-color: #2d4a6f; color: #94a3b8; }
+    .bottom-info {
+      font-size: 12.5px;
+      color: #64748b;
+    }
+    .bottom-info .green { color: #4ade80; font-weight: 600; }
+    .bottom-info .amber { color: #fbbf24; font-weight: 600; }
+    .next-btn {
+      background: #d97706;
+      color: #fff;
+      border: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .next-btn:hover { background: #b45309; transform: translateY(-1px); }
+    .next-btn:active { transform: translateY(0); }
+
+    .spacer { height: 70px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── App bar ── -->
+  <header class="appbar">
+    <div class="appbar-logo">
+      <div class="logo-square">CG</div>
+      <span class="brand-name">Cloud Gateway</span>
+    </div>
+    <div class="appbar-center-pill">
+      <span>SINV-2026-00089</span> &nbsp;·&nbsp; OTA Rejection
+    </div>
+    <div class="badge-rejected">422 Rejected</div>
+  </header>
+
+  <!-- ── Screen hint ── -->
+  <div class="screen-hint">
+    <span class="hint-label">📍 Cloud Gateway · OTA Response</span>
+    OTA Fawtara returned <strong>HTTP 422</strong> — 3 validation errors detected. Cloud Gateway classifies each error automatically: <strong>auto-fixable</strong> vs. <strong>manual action required</strong>.
+  </div>
+
+  <!-- ── Main content ── -->
+  <main class="main">
+
+    <!-- Section 1 — OTA HTTP Response header -->
+    <div class="card">
+      <div class="card-title"><span class="dot"></span> OTA Fawtara · API Response</div>
+      <div class="terminal-block">
+        <div class="terminal-http-line">
+          <span class="http-proto">HTTP/1.1</span>
+          <span class="http-status">422 Unprocessable Entity</span>
+        </div>
+        <hr class="divider" />
+        <div class="line"><span class="key">Endpoint:</span>   <span class="val teal">POST https://api.ota.gov.om/fawtara/v1/invoices</span></div>
+        <div class="line"><span class="key">Timestamp:</span>  <span class="val">2026-06-23T09:14:51Z</span></div>
+        <div class="line"><span class="key">Request ID:</span> <span class="val">OTA-REQ-2026-447291</span></div>
+        <div class="line"><span class="key">Invoice Ref:</span><span class="val">SINV-2026-00089</span></div>
+      </div>
+    </div>
+
+    <!-- Section 2 — Validation Errors -->
+    <div class="card">
+      <div class="section-header">
+        <h3>❌ Validation Errors</h3>
+        <span class="error-count-badge">3</span>
+      </div>
+
+      <!-- Error 1 -->
+      <div class="error-card">
+        <div class="error-header">
+          <span class="code-badge">E-VAT-001</span>
+          <span class="field-path">cac:AccountingCustomerParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID</span>
+        </div>
+        <div class="error-message">
+          Buyer VAT number format is invalid. Expected format: <code style="background:rgba(239,68,68,0.1);color:#f87171;padding:1px 6px;border-radius:3px;font-size:12px;">OM-XXXXXXXXX-X</code> (e.g. OM-123456789-0)
+        </div>
+        <div class="error-meta">
+          <div class="error-meta-item">
+            <span class="meta-label">Current value:</span>
+            <span class="meta-value" style="color:#f87171;">OM9988776655</span>
+          </div>
+          <span class="autofix-pill">🟢 Auto-fixable — Gateway will reformat</span>
+        </div>
+      </div>
+
+      <!-- Error 2 -->
+      <div class="error-card">
+        <div class="error-header">
+          <span class="code-badge">E-ADDR-003</span>
+          <span class="field-path">cac:AccountingCustomerParty/cac:Party/cac:PostalAddress/cbc:StreetName</span>
+        </div>
+        <div class="error-message">
+          Buyer street address (StreetName) is required but missing
+        </div>
+        <div class="error-meta">
+          <div class="error-meta-item">
+            <span class="meta-label">Current value:</span>
+            <span class="meta-value empty">(empty)</span>
+          </div>
+          <span class="autofix-pill">🟢 Auto-fixable — Will pull from buyer master data</span>
+        </div>
+      </div>
+
+      <!-- Error 3 -->
+      <div class="error-card amber">
+        <div class="error-header">
+          <span class="code-badge amber">E-TYPE-007</span>
+          <span class="field-path">cbc:InvoiceTypeCode</span>
+        </div>
+        <div class="error-message">
+          Invoice type code <code style="background:rgba(245,158,11,0.12);color:#fbbf24;padding:1px 6px;border-radius:3px;font-size:12px;">'380'</code> does not match detected supply type. Suggested: <code style="background:rgba(34,197,94,0.1);color:#4ade80;padding:1px 6px;border-radius:3px;font-size:12px;">'388'</code> for standard B2B commercial invoice
+        </div>
+        <div class="error-meta">
+          <div class="error-meta-item">
+            <span class="meta-label">Current value:</span>
+            <span class="meta-value" style="color:#fbbf24;">380</span>
+          </div>
+          <span class="autofix-pill amber">🟡 Review suggested — Gateway recommends 388</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 — Raw OTA Error JSON -->
+    <div class="card">
+      <div class="json-header" onclick="toggleJson()">
+        <h4>Raw OTA Error Payload</h4>
+        <button class="collapse-btn" id="collapse-label">▼ collapse</button>
+      </div>
+      <div class="json-block" id="json-block"><span class="j-null">{</span>
+  <span class="j-key">"status"</span>: <span class="j-str">"rejected"</span>,
+  <span class="j-key">"http_code"</span>: <span class="j-num">422</span>,
+  <span class="j-key">"request_id"</span>: <span class="j-str">"OTA-REQ-2026-447291"</span>,
+  <span class="j-key">"errors"</span>: [
+    {
+      <span class="j-key">"code"</span>: <span class="j-str">"E-VAT-001"</span>,
+      <span class="j-key">"field"</span>: <span class="j-str">"CompanyID"</span>,
+      <span class="j-key">"message"</span>: <span class="j-str">"Invalid VAT format"</span>
+    },
+    {
+      <span class="j-key">"code"</span>: <span class="j-str">"E-ADDR-003"</span>,
+      <span class="j-key">"field"</span>: <span class="j-str">"StreetName"</span>,
+      <span class="j-key">"message"</span>: <span class="j-str">"Required field missing"</span>
+    },
+    {
+      <span class="j-key">"code"</span>: <span class="j-str">"E-TYPE-007"</span>,
+      <span class="j-key">"field"</span>: <span class="j-str">"InvoiceTypeCode"</span>,
+      <span class="j-key">"message"</span>: <span class="j-str">"Type code mismatch"</span>
+    }
+  ],
+  <span class="j-key">"timestamp"</span>: <span class="j-str">"2026-06-23T09:14:51Z"</span>
+<span class="j-null">}</span></div>
+    </div>
+
+    <div class="spacer"></div>
+  </main>
+
+  <!-- ── Bottom bar ── -->
+  <nav class="bottom-bar">
+    <div class="bottom-left">
+      <button class="back-btn" onclick="window.parent.postMessage({action:'prev'}, '*')">← Back</button>
+      <span class="bottom-info">
+        <span class="green">2 auto-fixable</span>
+        &nbsp;·&nbsp;
+        <span class="amber">1 review recommended</span>
+      </span>
+    </div>
+    <button class="next-btn" onclick="window.parent.postMessage({action:'next'}, '*')">
+      See Error Details in Gateway →
+    </button>
+  </nav>
+
+  <script>
+    function toggleJson() {
+      const block = document.getElementById('json-block');
+      const label = document.getElementById('collapse-label');
+      if (block.style.display === 'none') {
+        block.style.display = '';
+        label.textContent = '▼ collapse';
+      } else {
+        block.style.display = 'none';
+        label.textContent = '▶ expand';
+      }
+    }
+  </script>
+
+</body>
+</html>

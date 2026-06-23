@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cloud Gateway – Invoice Entry</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #0a0f1e;
+    color: #e2e8f0;
+    font-size: 13.5px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── App Bar ── */
+  .app-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: #0d1829; border-bottom: 1px solid #1e3a5f;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; height: 52px; flex-shrink: 0;
+  }
+  .app-bar-left { display: flex; align-items: center; gap: 10px; }
+  .logo-square {
+    width: 32px; height: 32px; background: #0d9488; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 11px; letter-spacing: -0.5px;
+  }
+  .app-name { font-weight: 600; font-size: 14.5px; color: #f1f5f9; }
+  .center-pill {
+    background: rgba(13,148,136,0.15); border: 1px solid rgba(13,148,136,0.4);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 12px; font-weight: 600; color: #2dd4bf;
+  }
+  .field-counter { font-size: 11.5px; color: #64748b; display: flex; align-items: center; gap: 6px; }
+  .field-counter .ok { color: #10b981; font-weight: 700; }
+  .field-counter .sep { color: #334155; }
+
+  /* ── Progress Bar ── */
+  .progress-wrap {
+    background: #0d1829; border-bottom: 1px solid #1e293b;
+    padding: 5px 20px 7px; display: flex; align-items: center; gap: 10px;
+    font-size: 11px; color: #64748b; flex-shrink: 0;
+  }
+  .progress-track { flex: 1; height: 4px; background: #1e293b; border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 100%; background: linear-gradient(90deg,#0d9488,#14b8a6); border-radius: 999px; }
+  .progress-pct { color: #0d9488; font-weight: 700; white-space: nowrap; }
+
+  /* ── Tab Bar ── */
+  .tab-bar {
+    background: #111827; border-bottom: 1px solid #1e293b;
+    display: flex; gap: 0; padding: 0 20px; flex-shrink: 0;
+  }
+  .tab-btn {
+    padding: 11px 20px; font-size: 12.5px; font-weight: 600;
+    color: #64748b; cursor: pointer; border: none; background: transparent;
+    border-bottom: 2.5px solid transparent;
+    transition: color .15s, border-color .15s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .tab-btn:hover { color: #94a3b8; }
+  .tab-btn.active { color: #2dd4bf; border-bottom-color: #0d9488; }
+  .tab-count {
+    font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+    background: #1e293b; color: #94a3b8;
+  }
+  .tab-btn.active .tab-count { background: rgba(13,148,136,0.2); color: #2dd4bf; }
+
+  /* ── Tab Panels ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Main Scroll Area ── */
+  .main {
+    flex: 1; overflow-y: auto;
+    padding: 18px 20px 120px;
+    max-width: 1100px; margin: 0 auto; width: 100%;
+  }
+
+  /* ── Section Card ── */
+  .section-card {
+    background: #111827; border: 1px solid #1e293b;
+    border-radius: 10px; margin-bottom: 16px; overflow: hidden;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px; border-left: 3px solid #0d9488;
+    background: #0d1829; border-bottom: 1px solid #1e293b;
+  }
+  .section-header.opt { border-left-color: #475569; }
+  .section-title { font-size: 12.5px; font-weight: 700; color: #f1f5f9; }
+  .section-header.opt .section-title { color: #94a3b8; }
+  .section-count { margin-left: auto; font-size: 10.5px; color: #475569; font-weight: 500; }
+  .section-count.teal { color: #0d9488; }
+
+  /* ── Field Grid ── */
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0;
+  }
+  .field-cell {
+    padding: 12px 16px;
+    border-bottom: 1px solid #161d2e;
+    border-right: 1px solid #161d2e;
+  }
+  .field-label-row { display: flex; align-items: center; gap: 5px; margin-bottom: 7px; }
+  .field-label {
+    font-size: 10.5px; color: #64748b; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-m {
+    font-size: 8.5px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+    background: rgba(220,38,38,0.15); color: #f87171;
+    letter-spacing: 0.3px; text-transform: uppercase; flex-shrink: 0;
+  }
+  .badge-o {
+    font-size: 8.5px; font-weight: 600; padding: 1px 5px; border-radius: 3px;
+    background: #1e293b; color: #64748b;
+    letter-spacing: 0.3px; text-transform: uppercase; flex-shrink: 0;
+  }
+
+  /* ── Form Inputs ── */
+  .form-input, .form-select {
+    width: 100%; background: #0f172a;
+    border: 1px solid #2d3a4f; border-radius: 6px;
+    padding: 8px 11px; font-size: 13px; color: #f1f5f9;
+    font-family: inherit; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .form-input:focus, .form-select:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 2px rgba(13,148,136,0.18);
+  }
+  .form-input::placeholder { color: #2d3a4f; font-style: italic; }
+  .form-select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    padding-right: 30px;
+  }
+  .form-select option { background: #1e293b; color: #f1f5f9; }
+
+  /* ── Calculated (read-only) ── */
+  .calc-value {
+    background: #0a0f1e; border: 1px solid #1e293b;
+    border-radius: 6px; padding: 8px 11px;
+    font-size: 13px; color: #64748b; font-style: italic;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .calc-value.grand { color: #2dd4bf; font-size: 15px; font-weight: 700; font-style: normal; }
+  .calc-tag {
+    font-size: 9.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+    background: #1e293b; color: #475569; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+
+  /* ── Line Items Table ── */
+  .table-wrap { overflow-x: auto; padding: 14px 16px; }
+  .line-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 800px; }
+  .line-table th {
+    background: #0d1829; border: 1px solid #1e293b;
+    padding: 8px 9px; text-align: left; font-weight: 700;
+    color: #94a3b8; font-size: 10.5px; white-space: nowrap;
+  }
+  .th-badge {
+    display: inline-block; font-size: 8px; font-weight: 700;
+    padding: 1px 3px; border-radius: 3px; margin-left: 3px; vertical-align: middle;
+  }
+  .th-m { background: rgba(220,38,38,0.15); color: #f87171; }
+  .th-o { background: #1e293b; color: #64748b; }
+  .line-table td { border: 1px solid #1e293b; padding: 5px 7px; vertical-align: middle; }
+  .line-table tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+  .td-input {
+    width: 100%; background: transparent; border: none; outline: none;
+    color: #f1f5f9; font-size: 12px; font-family: inherit; padding: 3px 5px;
+    border-radius: 4px; transition: background .1s;
+  }
+  .td-input:focus { background: #0f172a; box-shadow: inset 0 0 0 1px #0d9488; }
+  .td-input.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .td-input.opt { color: #64748b; }
+  .td-input.opt::placeholder { color: #2d3a4f; }
+  .td-ro {
+    text-align: right; font-variant-numeric: tabular-nums;
+    font-weight: 600; color: #f1f5f9; padding: 5px 9px; white-space: nowrap;
+  }
+  .td-ro.teal { color: #2dd4bf; }
+  .td-center { text-align: center; color: #64748b; font-weight: 700; font-size: 11px; }
+  .add-row-btn {
+    margin-top: 10px; padding: 7px 16px;
+    background: transparent; border: 1px dashed #2d3a4f;
+    border-radius: 6px; color: #64748b; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .add-row-btn:hover { border-color: #0d9488; color: #2dd4bf; }
+
+  /* ── Bottom Bar ── */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: #0d1829; border-top: 1px solid #1e3a5f;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; gap: 16px; flex-shrink: 0;
+  }
+  .totals-summary {
+    font-size: 13px; color: #64748b;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .totals-summary .sep { color: #1e293b; }
+  .totals-label { font-size: 12px; }
+  .total-bold { font-weight: 700; font-size: 15px; color: #f1f5f9; }
+  .btn-submit {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 10px 26px; font-size: 13.5px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(13,148,136,0.4);
+    transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-submit:hover { background: linear-gradient(135deg,#0f766e,#115e59); transform: translateY(-1px); box-shadow: 0 4px 18px rgba(13,148,136,0.5); }
+
+  /* ── Screen Hint ── */
+  .screen-hint {
+    position: fixed; top: 8px; right: 12px; z-index: 9999;
+    background: rgba(15,23,42,0.92); backdrop-filter: blur(6px);
+    border: 1px solid rgba(13,148,136,0.3); border-radius: 8px;
+    padding: 8px 14px; max-width: 310px; font-size: 11.5px;
+    color: #94a3b8; line-height: 1.5; pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .screen-hint strong {
+    color: #2dd4bf; font-size: 10px; display: block;
+    margin-bottom: 3px; text-transform: uppercase; letter-spacing: .6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Screen Hint -->
+<div class="screen-hint">
+  <strong>&#128205; Cloud Gateway Portal &middot; Invoice Entry</strong>
+  Our portal exposes all 73 OTA-mandated UBL 2.1 fields, split into mandatory and optional sections. Mandatory fields are pre-validated in real time. Optional fields can be filled for richer compliance data.
+</div>
+
+<!-- App Bar -->
+<header class="app-bar">
+  <div class="app-bar-left">
+    <div class="logo-square">CG</div>
+    <span class="app-name">Cloud Gateway</span>
+  </div>
+  <div class="center-pill">New Invoice &middot; Manual Entry</div>
+  <div class="field-counter">
+    Mandatory: <span class="ok">14 &#10003;</span>
+    <span class="sep">|</span>
+    Optional: 59
+    <span class="sep">|</span>
+    <strong style="color:#f1f5f9;">73 OTA fields</strong>
+  </div>
+</header>
+
+<!-- Progress Bar -->
+<div class="progress-wrap">
+  <span>Progress:</span>
+  <div class="progress-track"><div class="progress-fill"></div></div>
+  <span class="progress-pct">14 / 14 mandatory fields completed &#10003;</span>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab(this,'mandatory')">
+    &#10003; Mandatory Fields <span class="tab-count">14</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(this,'optional')">
+    Optional Fields <span class="tab-count">59</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(this,'lineitems')">
+    Line Items <span class="tab-count">2</span>
+  </button>
+</div>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- ══ TAB 1: MANDATORY ══ -->
+  <div id="tab-mandatory" class="tab-panel active">
+
+    <!-- Invoice Header -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">&#9312; Invoice Header</span>
+        <span class="section-count">5 mandatory fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Invoice Number</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="MIP-2026-00031" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Invoice Type Code</span><span class="badge-m">Mandatory</span></div>
+          <select class="form-select">
+            <option selected>380 &ndash; Standard Invoice</option>
+            <option>381 &ndash; Credit Note</option>
+            <option>383 &ndash; Debit Note</option>
+          </select>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Issue Date</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="date" value="2026-06-23" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Due Date</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="date" value="2026-07-23" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Document Currency</span><span class="badge-m">Mandatory</span></div>
+          <select class="form-select">
+            <option selected>OMR &ndash; Omani Rial</option>
+            <option>USD &ndash; US Dollar</option>
+            <option>EUR &ndash; Euro</option>
+            <option>AED &ndash; UAE Dirham</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seller Information -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">&#9313; Seller (Supplier) Information</span>
+        <span class="section-count">6 mandatory fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Legal Name</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="Horizon Trading LLC" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller VAT Registration No</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="OM9876543210" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Commercial Register No</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="CR-2019-04821" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Address Line 1</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="P.O. Box 88, Ruwi" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller City</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="Muscat" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Country Code</span><span class="badge-m">Mandatory</span></div>
+          <select class="form-select">
+            <option selected>OM &ndash; Oman</option>
+            <option>AE &ndash; UAE</option>
+            <option>SA &ndash; Saudi Arabia</option>
+            <option>BH &ndash; Bahrain</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buyer Information -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">&#9314; Buyer (Customer) Information</span>
+        <span class="section-count">5 mandatory fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Legal Name</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="Muscat Logistics Co." />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer VAT Registration No</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="OM1122334455" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Address Line 1</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="Industrial Area, Rusayl" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer City</span><span class="badge-m">Mandatory</span></div>
+          <input class="form-input" type="text" value="Muscat" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Country Code</span><span class="badge-m">Mandatory</span></div>
+          <select class="form-select">
+            <option selected>OM &ndash; Oman</option>
+            <option>AE &ndash; UAE</option>
+            <option>SA &ndash; Saudi Arabia</option>
+            <option>BH &ndash; Bahrain</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tax Summary (auto-calculated) -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">&#9315; Tax &amp; Totals</span>
+        <span class="section-count teal">auto-calculated from line items</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Tax Category Code</span><span class="badge-m">Mandatory</span></div>
+          <select class="form-select">
+            <option selected>S &ndash; Standard Rate (5%)</option>
+            <option>Z &ndash; Zero Rate</option>
+            <option>E &ndash; Exempt</option>
+          </select>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Taxable Amount</span><span class="badge-m">Mandatory</span></div>
+          <div class="calc-value">OMR 1,450.000 <span class="calc-tag">calculated</span></div>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Total VAT Amount</span><span class="badge-m">Mandatory</span></div>
+          <div class="calc-value">OMR 72.500 <span class="calc-tag">calculated</span></div>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Grand Total (incl. VAT)</span><span class="badge-m">Mandatory</span></div>
+          <div class="calc-value grand">OMR 1,522.500</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-mandatory -->
+
+  <!-- ══ TAB 2: OPTIONAL ══ -->
+  <div id="tab-optional" class="tab-panel">
+
+    <!-- Invoice Header Optional -->
+    <div class="section-card">
+      <div class="section-header opt">
+        <span class="section-title">Invoice Header &mdash; Optional</span>
+        <span class="section-count">3 fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Tax Currency</span><span class="badge-o">Optional</span></div>
+          <select class="form-select">
+            <option selected>OMR &ndash; Omani Rial</option>
+            <option>USD &ndash; US Dollar</option>
+            <option>EUR &ndash; Euro</option>
+          </select>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Invoice Note / Narration</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="e.g. Thank you for your business" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Reference / PO No</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="e.g. PO-2026-1234" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Seller Optional -->
+    <div class="section-card">
+      <div class="section-header opt">
+        <span class="section-title">Seller &mdash; Additional Details</span>
+        <span class="section-count">4 fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Address Line 2</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="District / Area" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Phone</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" value="+968 2412 0088" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Email</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="email" value="finance@horizontrading.om" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Seller Website</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="https://..." />
+        </div>
+      </div>
+    </div>
+
+    <!-- Buyer Optional -->
+    <div class="section-card">
+      <div class="section-header opt">
+        <span class="section-title">Buyer &mdash; Additional Details</span>
+        <span class="section-count">4 fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Address Line 2</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="District / Area" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Commercial Register</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" value="CR-2018-07234" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Phone</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="+968 ..." />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Buyer Email</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="email" value="accounts@muscatlog.om" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment & Delivery -->
+    <div class="section-card">
+      <div class="section-header opt">
+        <span class="section-title">Payment &amp; Delivery</span>
+        <span class="section-count">5 fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Payment Means Code</span><span class="badge-o">Optional</span></div>
+          <select class="form-select">
+            <option selected>30 &ndash; Credit Transfer</option>
+            <option>10 &ndash; Cash</option>
+            <option>48 &ndash; Bank Card</option>
+            <option>97 &ndash; Cheque</option>
+          </select>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Payment Due Date</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="date" value="2026-07-23" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Bank Account IBAN</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="OM00 0000 0000 0000 0000 0000" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Delivery Date</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="date" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Delivery Location</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="e.g. Industrial Area Warehouse" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Allowances & References -->
+    <div class="section-card">
+      <div class="section-header opt">
+        <span class="section-title">Allowances &amp; Document References</span>
+        <span class="section-count">5 fields</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Contract Reference</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="e.g. CTR-2026-009" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Project Reference</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="e.g. PROJ-SHELF-Q2" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Freight Charge (OMR)</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="number" step="0.001" placeholder="0.000" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Invoice-Level Discount (OMR)</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="number" step="0.001" placeholder="0.000" />
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Special Instructions</span><span class="badge-o">Optional</span></div>
+          <input class="form-input" type="text" placeholder="Additional notes..." />
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-optional -->
+
+  <!-- ══ TAB 3: LINE ITEMS ══ -->
+  <div id="tab-lineitems" class="tab-panel">
+
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">&#9316; Line Items</span>
+        <span class="section-count">2 lines &mdash; editable</span>
+      </div>
+      <div class="table-wrap">
+        <table class="line-table">
+          <thead>
+            <tr>
+              <th style="width:32px;">#</th>
+              <th>Item Name <span class="th-badge th-m">[M]</span></th>
+              <th>Unit <span class="th-badge th-m">[M]</span></th>
+              <th>Qty <span class="th-badge th-m">[M]</span></th>
+              <th>Unit Price <span class="th-badge th-m">[M]</span></th>
+              <th>Line Amt <span class="th-badge th-m">[M]</span></th>
+              <th>VAT % <span class="th-badge th-m">[M]</span></th>
+              <th>VAT Amt <span class="th-badge th-m">[M]</span></th>
+              <th>Discount <span class="th-badge th-o">[O]</span></th>
+              <th>Item Code <span class="th-badge th-o">[O]</span></th>
+              <th>Classification <span class="th-badge th-o">[O]</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-center">1</td>
+              <td><input class="td-input" type="text" value="Storage Shelving Units" /></td>
+              <td style="width:60px;"><input class="td-input num" type="text" value="EA" style="text-align:center;" /></td>
+              <td style="width:60px;"><input class="td-input num" type="number" value="10" /></td>
+              <td style="width:90px;"><input class="td-input num" type="number" step="0.001" value="85.000" /></td>
+              <td class="td-ro">850.000</td>
+              <td style="width:60px;"><input class="td-input num" type="number" step="0.1" value="5" style="text-align:center;" /></td>
+              <td class="td-ro teal">42.500</td>
+              <td style="width:80px;"><input class="td-input num opt" type="number" step="0.001" placeholder="—" /></td>
+              <td><input class="td-input opt" type="text" value="SKU-SHELF-01" /></td>
+              <td><input class="td-input opt" type="text" value="Storage" /></td>
+            </tr>
+            <tr>
+              <td class="td-center">2</td>
+              <td><input class="td-input" type="text" value="Packing Materials" /></td>
+              <td style="width:60px;"><input class="td-input num" type="text" value="BOX" style="text-align:center;" /></td>
+              <td style="width:60px;"><input class="td-input num" type="number" value="50" /></td>
+              <td style="width:90px;"><input class="td-input num" type="number" step="0.001" value="12.000" /></td>
+              <td class="td-ro">600.000</td>
+              <td style="width:60px;"><input class="td-input num" type="number" step="0.1" value="5" style="text-align:center;" /></td>
+              <td class="td-ro teal">30.000</td>
+              <td style="width:80px;"><input class="td-input num opt" type="number" step="0.001" placeholder="—" /></td>
+              <td><input class="td-input opt" type="text" value="SKU-PACK-02" /></td>
+              <td><input class="td-input opt" type="text" value="Materials" /></td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="add-row-btn">+ Add Line Item</button>
+      </div>
+    </div>
+
+    <!-- Calculated Tax Summary -->
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">Tax Totals</span>
+        <span class="section-count teal">auto-calculated from line items</span>
+      </div>
+      <div class="field-grid">
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Net Amount</span></div>
+          <div class="calc-value">OMR 1,450.000 <span class="calc-tag">net</span></div>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Total VAT (5%)</span></div>
+          <div class="calc-value">OMR 72.500 <span class="calc-tag">vat</span></div>
+        </div>
+        <div class="field-cell">
+          <div class="field-label-row"><span class="field-label">Grand Total (incl. VAT)</span></div>
+          <div class="calc-value grand">OMR 1,522.500</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-lineitems -->
+
+</main>
+
+<!-- Sticky Bottom Bar -->
+<footer class="bottom-bar">
+  <div class="totals-summary">
+    <span><span class="totals-label">Net:</span> OMR 1,450.000</span>
+    <span class="sep">&middot;</span>
+    <span><span class="totals-label">VAT:</span> OMR 72.500</span>
+    <span class="sep">&middot;</span>
+    <span class="total-bold">Total: OMR 1,522.500</span>
+  </div>
+  <button class="btn-submit" onclick="window.parent.postMessage({action:'next'}, '*')">
+    Validate &amp; Submit &nbsp;&rarr;
+  </button>
+</footer>
+
+<script>
+  function switchTab(btn, name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+</script>
+
+</body>
+</html>

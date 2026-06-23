@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PINV-2026-00019 — Auto-Created</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { overflow: hidden; display: flex; height: 100vh; }
+    .erp-form { padding-bottom: 70px; }
+    .auto-banner {
+      background: #f5f3ff;
+      border-bottom: 1px solid #ddd6fe;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #6d28d9;
+      flex-shrink: 0;
+    }
+    .auto-banner strong { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 ERPNext · Purchase Invoice Auto-Created</strong>The Cloud Gateway has automatically created a draft Purchase Invoice in ERPNext. All fields are pre-filled from the OTA-cleared invoice — no manual entry needed.</div>
+
+  <div class="erp-shell">
+
+    <aside class="erp-sidebar">
+      <div class="erp-logo">frappe <span>ERPNext</span></div>
+      <div class="erp-nav-section">
+        <div class="erp-nav-item"><span class="nav-icon">🏠</span> Home</div>
+        <div class="erp-nav-item active"><span class="nav-icon">💰</span> Accounts</div>
+        <div class="erp-nav-item"><span class="nav-icon">📦</span> Stock</div>
+        <div class="erp-nav-item"><span class="nav-icon">🛒</span> Buying</div>
+        <div class="erp-nav-item"><span class="nav-icon">💼</span> Selling</div>
+        <div class="erp-nav-item"><span class="nav-icon">⚙️</span> Settings</div>
+      </div>
+      <div style="margin-top:auto; padding:14px 18px; border-top:1px solid #2d3748;">
+        <div style="font-size:11px; color:#68d391; display:flex; align-items:center; gap:6px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#68d391;flex-shrink:0;display:inline-block;"></span>
+          E-Invoice Plugin: Active ✓
+        </div>
+      </div>
+    </aside>
+
+    <div class="erp-main">
+
+      <div class="auto-banner">
+        <span>🤖</span>
+        <span class="banner-text"><strong>Auto-created by E-Invoice Plugin</strong> — Fields populated from OTA-cleared invoice INV-ALN-2026-00847 via Cloud Gateway. Please review before submitting.</span>
+      </div>
+
+      <div class="erp-toolbar">
+        <div>
+          <div class="erp-breadcrumb">
+            <span>Accounts</span><span class="sep">›</span>
+            <span>Purchase Invoice</span><span class="sep">›</span>
+            <span style="color:#0f172a; font-weight:600;">PINV-2026-00019</span>
+          </div>
+          <div class="erp-doc-title" style="margin-top:2px;">PINV-2026-00019</div>
+        </div>
+        <div class="toolbar-actions">
+          <span class="status-badge status-draft">Draft</span>
+          <button class="btn btn-secondary">Save</button>
+          <button class="btn btn-success" onclick="handleReview()">Review Invoice</button>
+        </div>
+      </div>
+
+      <div class="erp-form">
+
+        <div class="form-section">
+          <div class="form-section-head">Invoice Details</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Supplier</label>
+              <div class="field-value link">Al Noor Electronics LLC</div>
+            </div>
+            <div class="form-field">
+              <label>Supplier Invoice No.</label>
+              <div class="field-value">INV-ALN-2026-00847</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Supplier Invoice Date</label>
+              <div class="field-value">23 Jun 2026</div>
+            </div>
+            <div class="form-field">
+              <label>Posting Date</label>
+              <div class="field-value">23 Jun 2026</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Company</label>
+              <div class="field-value link">Wisright Technologies LLC</div>
+            </div>
+            <div class="form-field">
+              <label>Currency</label>
+              <div class="field-value">OMR</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-head">Items</div>
+          <div style="overflow-x:auto;">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width:36px; padding-left:16px;">#</th>
+                  <th>Item</th>
+                  <th class="amount">Qty</th>
+                  <th class="amount">Rate (OMR)</th>
+                  <th class="amount">Amount (OMR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:#94a3b8; padding-left:16px;">1</td>
+                  <td><div style="font-weight:600; color:#0f172a;">LAPTOP-PRO-15</div><div style="font-size:11px;color:#64748b;">Laptop Pro 15" — Business Edition</div></td>
+                  <td class="amount">5</td>
+                  <td class="amount">480.000</td>
+                  <td class="amount">2,400.000</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8; padding-left:16px;">2</td>
+                  <td><div style="font-weight:600; color:#0f172a;">DOCKING-STATION</div><div style="font-size:11px;color:#64748b;">USB-C Docking Station</div></td>
+                  <td class="amount">5</td>
+                  <td class="amount">88.000</td>
+                  <td class="amount">440.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="totals-block">
+            <div class="totals-row"><span class="tot-label">Net Total</span><span class="tot-value">OMR 2,840.000</span></div>
+            <div class="totals-row"><span class="tot-label">VAT @ 5%</span><span class="tot-value">OMR 142.000</span></div>
+            <div class="grand-total-row"><span class="tot-label">Grand Total</span><span class="tot-value">OMR 2,982.000</span></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-head">E-Invoice Reference</div>
+          <div style="padding:14px 16px;">
+            <div class="einv-box">
+              <div class="einv-row"><span class="einv-key">OTA Clearance Ref</span><span class="einv-val">OTA-CLR-2026-9104</span></div>
+              <div class="einv-row"><span class="einv-key">UUID</span><span class="einv-val" style="font-family:monospace;font-size:11px;">9a3f1c72-4e8b-4d0a-bc21-6f7e3d9a5c18</span></div>
+              <div class="einv-row"><span class="einv-key">Source</span><span class="einv-val">OTA Fawtara → Fynamics ASP → Cloud Gateway</span></div>
+              <div class="einv-msg">This invoice was auto-created by the E-Invoice Plugin. Verify line items against your Purchase Order before submitting.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="bottom-bar" style="left:220px;">
+        <div class="step-info"><strong>Step 4 of 6</strong> — Review the auto-created Purchase Invoice</div>
+        <button class="btn btn-success btn-lg" id="bottom-review-btn" onclick="handleReview()">Review Invoice →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function handleReview() {
+      var btns = document.querySelectorAll('button');
+      btns.forEach(function(b) { b.disabled = true; });
+      setTimeout(function() {
+        window.parent.postMessage({ action: 'next' }, '*');
+      }, 600);
+    }
+  </script>
+</body>
+</html>

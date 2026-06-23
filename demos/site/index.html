@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oman E-Invoicing — Interactive Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0f1e;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .logo-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: #64748b;
+      max-width: 520px;
+      line-height: 1.6;
+    }
+    .ota-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 4px 12px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #60a5fa;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Flow Grid ── */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 340px);
+      gap: 20px;
+      max-width: 720px;
+    }
+
+    /* ── Flow Card ── */
+    .flow-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .flow-card.active {
+      border-color: #1d4ed8;
+      cursor: default;
+    }
+    .flow-card.active:hover {
+      border-color: #3b82f6;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(59,130,246,0.15);
+    }
+    .flow-card.soon {
+      opacity: 0.55;
+    }
+
+    .card-icon {
+      width: 52px; height: 52px;
+      background: #1e293b;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .flow-card.active .card-icon {
+      background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.2));
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+
+    .card-body { flex: 1; }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.55;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .step-badge {
+      background: #1e293b;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .start-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .start-btn:hover { background: #1d4ed8; }
+
+    .soon-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      padding: 9px 0;
+    }
+
+    /* ── Divider label ── */
+    .section-label {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #334155;
+      text-transform: uppercase;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 48px;
+      text-align: center;
+      font-size: 12px;
+      color: #334155;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">E-Invoice Cloud Gateway</span>
+    </div>
+    <h1>Interactive Demo</h1>
+    <p class="subtitle">Step-by-step walkthrough of the Oman Fawtara e-invoicing compliance system — see exactly what your team will experience.</p>
+    <span class="ota-badge">OMAN OTA · FAWTARA PHASE 1 · UBL 2.1</span>
+  </div>
+
+  <div class="flow-grid">
+
+    <div class="section-label">Invoice Flows</div>
+
+    <!-- Flow 1 — Outgoing Invoice (active) -->
+    <div class="flow-card active">
+      <div class="card-icon">→</div>
+      <div class="card-body">
+        <div class="card-title">Outgoing Invoice</div>
+        <div class="card-desc">Seller submits a sales invoice to the OTA via the Cloud Gateway and receives OTA clearance back into ERP.</div>
+      </div>
+      <div class="card-footer">
+        <span class="step-badge">6 steps</span>
+        <a class="start-btn" href="outgoing-flow/index.html">Start Demo →</a>
+      </div>
+    </div>
+
+    <!-- Flow 2 — Incoming Invoice (active) -->
+    <div class="flow-card active">
+      <div class="card-icon">←</div>
+      <div class="card-body">
+        <div class="card-title">Incoming Invoice</div>
+        <div class="card-desc">Buyer receives a supplier's cleared invoice from the OTA network, auto-posted as a Purchase Invoice in ERP.</div>
+      </div>
+      <div class="card-footer">
+        <span class="step-badge">6 steps</span>
+        <a class="start-btn" href="incoming-flow/index.html">Start Demo →</a>
+      </div>
+    </div>
+
+    <div class="section-label">Integration Paths</div>
+
+    <!-- Flow 3 — Manual Invoice Portal -->
+    <div class="flow-card active">
+      <div class="card-icon">📋</div>
+      <div class="card-body">
+        <div class="card-title">Manual Invoice Entry</div>
+        <div class="card-desc">Legacy or no-ERP clients log into the portal, enter invoices field by field or import via Excel, then submit to OTA.</div>
+      </div>
+      <div class="card-footer">
+        <span class="step-badge">5 steps</span>
+        <a class="start-btn" href="manual-flow/index.html">Start Demo →</a>
+      </div>
+    </div>
+
+    <!-- Flow 4 — Rejection + Retry (active) -->
+    <div class="flow-card active" style="border-color: #92400e;">
+      <div class="card-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.2)); border: 1px solid rgba(245,158,11,0.3); font-size: 20px;">✕</div>
+      <div class="card-body">
+        <div class="card-title">Rejection + Retry</div>
+        <div class="card-desc">See how errors are caught, surfaced, and auto-retried — OTA rejects, Cloud Gateway auto-fixes, invoice clears on retry.</div>
+      </div>
+      <div class="card-footer">
+        <span class="step-badge">7 steps</span>
+        <a class="start-btn" href="rejection-flow/index.html" style="background: #d97706;">Start Demo →</a>
+      </div>
+    </div>
+
+    <!-- Flow 5 — Connector Setup (coming soon) -->
+    <div class="flow-card soon">
+      <div class="card-icon">🔌</div>
+      <div class="card-body">
+        <div class="card-title">ERP Connector Setup</div>
+        <div class="card-desc">One-time configuration of the ERP connector plugin — field mapping, API credentials, and test submission.</div>
+      </div>
+      <div class="card-footer">
+        <span class="step-badge">3 steps</span>
+        <span class="soon-label">Coming soon</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Oman Fawtara E-Invoicing · Cloud Gateway Demo &nbsp;·&nbsp; Confidential
+  </div>
+
+</body>
+</html>

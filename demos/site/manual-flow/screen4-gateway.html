@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Gateway · Submission Pipeline</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Screen hint */
+  .screen-hint {
+    position: fixed; top: 8px; right: 12px; z-index: 9999;
+    background: rgba(15,23,42,0.92); backdrop-filter: blur(6px);
+    border: 1px solid rgba(13,148,136,0.3); border-radius: 8px;
+    padding: 8px 14px; max-width: 310px; font-size: 11.5px;
+    color: #94a3b8; line-height: 1.5; pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .screen-hint strong {
+    color: #2dd4bf; font-size: 10px; display: block;
+    margin-bottom: 3px; text-transform: uppercase; letter-spacing: .6px;
+  }
+
+  /* App Header */
+  .app-header {
+    background: #0f172a;
+    border-bottom: 1px solid rgba(13,148,136,0.25);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .app-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 15px; color: #0f172a;
+    flex-shrink: 0;
+  }
+  .app-name {
+    font-size: 15px; font-weight: 600; color: #f1f5f9;
+    letter-spacing: -0.2px;
+  }
+  .app-name span { color: #2dd4bf; }
+
+  .header-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .badge-submission {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(13,148,136,0.15);
+    border: 1px solid rgba(13,148,136,0.4);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px; font-weight: 600; color: #2dd4bf;
+  }
+  .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #2dd4bf;
+    animation: pulse-anim 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse-anim {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  .invoice-id {
+    font-size: 12px; color: #64748b;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    letter-spacing: 0.3px;
+  }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    padding: 28px 24px 100px;
+    max-width: 780px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Flow bar */
+  .flow-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 28px;
+    padding: 18px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+  }
+  .flow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .flow-node-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .flow-node-icon.teal {
+    background: rgba(13,148,136,0.2);
+    border: 1.5px solid #0d9488;
+  }
+  .flow-node-icon.purple {
+    background: rgba(139,92,246,0.15);
+    border: 1.5px solid #8b5cf6;
+  }
+  .flow-node-icon.green {
+    background: rgba(34,197,94,0.15);
+    border: 1.5px solid #22c55e;
+  }
+  .flow-node-label {
+    font-size: 10.5px; font-weight: 600; text-align: center; line-height: 1.3;
+    max-width: 90px;
+  }
+  .flow-node-label.teal { color: #2dd4bf; }
+  .flow-node-label.purple { color: #a78bfa; }
+  .flow-node-label.green { color: #4ade80; }
+
+  .flow-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0 14px;
+    flex-shrink: 0;
+    margin-bottom: 16px;
+  }
+  .flow-arrow-row {
+    display: flex; align-items: center;
+  }
+  .flow-arrow-shaft {
+    width: 52px; height: 2px;
+    background: linear-gradient(90deg, rgba(100,116,139,0.35), rgba(100,116,139,0.65));
+  }
+  .flow-arrow-head {
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid rgba(100,116,139,0.65);
+  }
+  .flow-arrow-label {
+    font-size: 9.5px; color: #475569;
+    font-style: italic; letter-spacing: 0.2px;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* Step cards */
+  .step-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .step-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .step-card-header {
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .step-num.teal  { background: rgba(13,148,136,0.25);  color: #2dd4bf; border: 1px solid rgba(13,148,136,0.4); }
+  .step-num.purple{ background: rgba(139,92,246,0.2);   color: #a78bfa; border: 1px solid rgba(139,92,246,0.35); }
+  .step-num.green { background: rgba(34,197,94,0.15);   color: #4ade80; border: 1px solid rgba(34,197,94,0.35); }
+
+  .step-title    { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+  .step-subtitle { font-size: 11px; color: #475569; margin-left: auto; font-family: "SF Mono","Fira Code",monospace; }
+
+  .step-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+
+  .log-line {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12.5px; line-height: 1.45;
+  }
+  .log-ts    { color: #334155; font-family: "SF Mono","Fira Code",monospace; font-size: 11px; flex-shrink: 0; }
+  .log-check { color: #22c55e; flex-shrink: 0; font-size: 12px; }
+  .log-text  { color: #cbd5e1; }
+  .log-text strong { color: #2dd4bf; font-weight: 600; }
+
+  /* JSON block */
+  .json-block {
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+    font-family: "SF Mono","Fira Code",monospace;
+    font-size: 11.5px;
+    line-height: 1.75;
+    color: #94a3b8;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .j-method { color: #f472b6; font-weight: 700; }
+  .j-path   { color: #c4b5fd; }
+  .j-key    { color: #7dd3fc; }
+  .j-str    { color: #86efac; }
+  .j-num    { color: #fbbf24; }
+
+  /* Clearance box */
+  .clearance-box {
+    background: rgba(13,148,136,0.07);
+    border: 1.5px solid rgba(13,148,136,0.38);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .clr-ref-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .clr-ref-val {
+    font-size: 15px; font-weight: 700; color: #2dd4bf;
+    font-family: "SF Mono","Fira Code",monospace;
+  }
+  .uuid-text {
+    font-family: "SF Mono","Fira Code",monospace;
+    font-size: 11px; color: #64748b;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,16,30,0.97);
+    border-top: 1px solid rgba(13,148,136,0.18);
+    backdrop-filter: blur(10px);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+  }
+  .bottom-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13.5px; color: #4ade80; font-weight: 500;
+  }
+  .btn-next {
+    background: linear-gradient(135deg, #0d9488, #0891b2);
+    border: none; border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 13px; font-weight: 600; color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: opacity 0.18s, transform 0.15s;
+    box-shadow: 0 4px 16px rgba(13,148,136,0.28);
+    letter-spacing: 0.1px;
+  }
+  .btn-next:hover  { opacity: 0.87; transform: translateY(-1px); }
+  .btn-next:active { transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Screen hint -->
+<div class="screen-hint">
+  <strong>📍 Cloud Gateway · Submission Pipeline</strong>
+  Once confirmed, our Cloud Gateway automatically routes the invoice through the ASP signing pipeline and submits to OTA Fawtara. The client sees live status — no manual steps needed.
+</div>
+
+<!-- App Header -->
+<header class="app-header">
+  <div class="app-logo">
+    <div class="logo-icon">CG</div>
+    <div class="app-name"><span>Cloud</span> Gateway</div>
+  </div>
+  <div class="header-center">
+    <div class="badge-submission">
+      <div class="pulse-dot"></div>
+      Submission in Progress
+    </div>
+    <div class="invoice-id">MIP-2026-00031</div>
+  </div>
+  <div style="width:180px"></div>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Flow Bar -->
+  <div class="flow-bar">
+    <div class="flow-node">
+      <div class="flow-node-icon teal">🌐</div>
+      <div class="flow-node-label teal">Cloud Gateway<br>Portal</div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="flow-arrow-row">
+        <div class="flow-arrow-shaft"></div>
+        <div class="flow-arrow-head"></div>
+      </div>
+      <div class="flow-arrow-label">sign request</div>
+    </div>
+
+    <div class="flow-node">
+      <div class="flow-node-icon purple">🔐</div>
+      <div class="flow-node-label purple">Fynamics<br>ASP</div>
+    </div>
+
+    <div class="flow-arrow">
+      <div class="flow-arrow-row">
+        <div class="flow-arrow-shaft"></div>
+        <div class="flow-arrow-head"></div>
+      </div>
+      <div class="flow-arrow-label">submit</div>
+    </div>
+
+    <div class="flow-node">
+      <div class="flow-node-icon green">🏛</div>
+      <div class="flow-node-label green">OTA Fawtara</div>
+    </div>
+  </div>
+
+  <!-- Step 1: Cloud Gateway Processing -->
+  <div class="step-card" id="card1">
+    <div class="step-card-header">
+      <div class="step-num teal">1</div>
+      <div class="step-title">Cloud Gateway Processing</div>
+      <div class="step-subtitle">14:51:02 – 14:51:03</div>
+    </div>
+    <div class="step-body">
+      <div class="log-line">
+        <span class="log-ts">14:51:02</span>
+        <span class="log-check">✅</span>
+        <span class="log-text">Invoice <strong>MIP-2026-00031</strong> confirmed by user</span>
+      </div>
+      <div class="log-line">
+        <span class="log-ts">14:51:02</span>
+        <span class="log-check">✅</span>
+        <span class="log-text">UBL 2.1 XML payload packaged (4.2 KB)</span>
+      </div>
+      <div class="log-line">
+        <span class="log-ts">14:51:03</span>
+        <span class="log-check">✅</span>
+        <span class="log-text">Seller <strong>OM9876543210</strong> verified in OTA registry</span>
+      </div>
+      <div class="log-line">
+        <span class="log-ts">14:51:03</span>
+        <span class="log-check">✅</span>
+        <span class="log-text">Forwarding to Fynamics ASP for digital signing</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Fynamics ASP -->
+  <div class="step-card" id="card2">
+    <div class="step-card-header">
+      <div class="step-num purple">2</div>
+      <div class="step-title">Fynamics ASP · Digital Signing &amp; OTA Submission</div>
+      <div class="step-subtitle">14:51:04</div>
+    </div>
+    <div class="step-body">
+      <div class="json-block"><span class="j-method">POST</span> <span class="j-path">/api/asp/submit-invoice</span>
+{
+  <span class="j-key">"invoice_id"</span>:    <span class="j-str">"MIP-2026-00031"</span>,
+  <span class="j-key">"source"</span>:         <span class="j-str">"cloud_gateway_portal"</span>,
+  <span class="j-key">"seller_vat"</span>:     <span class="j-str">"OM9876543210"</span>,
+  <span class="j-key">"buyer_vat"</span>:      <span class="j-str">"OM1122334455"</span>,
+  <span class="j-key">"total_omr"</span>:      <span class="j-num">1522.500</span>,
+  <span class="j-key">"signing_cert"</span>:   <span class="j-str">"CG-OTA-2026-CERT"</span>
+}</div>
+      <div class="log-line">
+        <span class="log-ts">14:51:04</span>
+        <span class="log-check">✅</span>
+        <span class="log-text">RSA-SHA256 digital signature applied</span>
+      </div>
+      <div class="log-line">
+        <span class="log-ts">14:51:04</span>
+        <span class="log-check">✅</span>
+        <span class="log-text">Signed XML submitted to OTA Fawtara endpoint</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: OTA Fawtara Response -->
+  <div class="step-card" id="card3">
+    <div class="step-card-header">
+      <div class="step-num green">3</div>
+      <div class="step-title">OTA Fawtara Response</div>
+      <div class="step-subtitle">14:51:05 – 14:51:06</div>
+    </div>
+    <div class="step-body">
+      <div class="clearance-box">
+        <div class="log-line">
+          <span class="log-ts">14:51:05</span>
+          <span class="log-check">✅</span>
+          <span class="log-text">OTA accepted invoice <strong>MIP-2026-00031</strong></span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:51:05</span>
+          <span class="log-check">✅</span>
+          <span class="log-text">
+            Clearance Reference: <span class="clr-ref-val">OTA-CLR-2026-7291</span>
+          </span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:51:05</span>
+          <span class="log-check">✅</span>
+          <span class="log-text">UUID: <span class="uuid-text">7b2e4f91-3c8a-4d12-a5e7-1f9b0c3d6e82</span></span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:51:06</span>
+          <span class="log-check">✅</span>
+          <span class="log-text">Clearance QR code generated &amp; stored in portal</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <div class="bottom-status">
+    ✅ Invoice cleared by OTA Fawtara
+  </div>
+  <button class="btn-next" onclick="window.parent.postMessage({action:'next'}, '*')">
+    View Clearance Certificate →
+  </button>
+</div>
+
+<script>
+  const delays = [100, 700, 1400];
+  ['card1','card2','card3'].forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }, delays[i]);
+  });
+</script>
+</body>
+</html>

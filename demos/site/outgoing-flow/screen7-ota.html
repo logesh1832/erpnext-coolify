@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTA Fawtara Platform — Clearance</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── OTA shell ─────────────────────────────────────────── */
+    html, body {
+      background: #07101f;
+      color: #d1dbe8;
+      height: 100%;
+    }
+
+    .ota-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #07101f;
+    }
+
+    /* ── OTA header ─────────────────────────────────────────── */
+    .ota-header {
+      background: #0a1628;
+      border-bottom: 2px solid #1a3660;
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 58px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .ota-header::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #1a56db 0%, #0ea5e9 40%, #1a56db 100%);
+      opacity: 0.7;
+    }
+
+    .ota-flag {
+      font-size: 26px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .ota-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .ota-brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e8eef7;
+      letter-spacing: 0.1px;
+    }
+
+    .ota-brand-sub {
+      font-size: 10px;
+      color: #4a6fa5;
+      font-weight: 500;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .ota-divider-v {
+      width: 1px;
+      height: 28px;
+      background: #1e3459;
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .ota-system-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #7fa8d8;
+      letter-spacing: 0.2px;
+    }
+
+    .ota-header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ota-phase-badge {
+      background: #0d1f3e;
+      border: 1px solid #1a3660;
+      color: #5b8fc4;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .ota-live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: #34d399;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .ota-live-dot::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+      animation: livepulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes livepulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Main content ───────────────────────────────────────── */
+    .ota-content {
+      flex: 1;
+      padding: 24px 28px 100px;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ── Receipt card ───────────────────────────────────────── */
+    .ota-card {
+      background: #0d1b30;
+      border: 1px solid #1a3660;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .ota-card-head {
+      background: #0a1628;
+      border-bottom: 1px solid #1a3660;
+      padding: 9px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ota-card-head-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #4a6fa5;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+    }
+
+    .ota-card-head-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #4a6fa5;
+    }
+
+    .ota-card-head-right .time-val {
+      color: #7fa8d8;
+      font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+      font-weight: 600;
+    }
+
+    .ota-card-body {
+      padding: 16px 18px;
+    }
+
+    /* ── Request info grid ──────────────────────────────────── */
+    .req-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .req-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid #0f1f38;
+      font-size: 12px;
+    }
+
+    .req-row:last-child { border-bottom: none; }
+
+    .req-col { padding: 0 10px; }
+    .req-col:first-child { padding-left: 0; border-right: 1px solid #0f1f38; }
+
+    .req-key {
+      color: #4a6fa5;
+      min-width: 90px;
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .req-val {
+      color: #b8cfe8;
+      font-size: 12px;
+    }
+
+    .req-val.mono {
+      font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+      font-size: 11px;
+      color: #7fa8d8;
+    }
+
+    .req-val.highlight {
+      color: #e8eef7;
+      font-weight: 600;
+    }
+
+    .req-val .vat-num {
+      color: #4a6fa5;
+      font-size: 10px;
+      font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+      margin-left: 4px;
+    }
+
+    .type-badge {
+      display: inline-block;
+      background: #0d1f3e;
+      color: #5b8fc4;
+      border: 1px solid #1a3660;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+    }
+
+    .amount-row {
+      font-size: 13px;
+      font-weight: 700;
+      color: #e8eef7;
+      padding-top: 6px;
+    }
+
+    .amount-row .vat-part {
+      font-size: 11px;
+      font-weight: 400;
+      color: #5b8fc4;
+      margin-left: 6px;
+    }
+
+    /* ── Checks section ─────────────────────────────────────── */
+    .checks-head {
+      font-size: 10px;
+      font-weight: 700;
+      color: #4a6fa5;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      padding: 9px 18px;
+      border-bottom: 1px solid #1a3660;
+      background: #0a1628;
+    }
+
+    .checks-list {
+      padding: 12px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 0;
+      border-bottom: 1px solid #0f1f38;
+      font-size: 12px;
+      color: #b8cfe8;
+    }
+
+    .check-item:last-child { border-bottom: none; }
+
+    .check-icon {
+      color: #34d399;
+      font-size: 13px;
+      flex-shrink: 0;
+      width: 16px;
+      text-align: center;
+    }
+
+    /* ── Clearance granted card ─────────────────────────────── */
+    .clearance-card {
+      background: #071a0e;
+      border: 2px solid #16a34a;
+      border-radius: 10px;
+      padding: 24px 26px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      animation: borderglow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes borderglow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0), 0 0 16px 0 rgba(22,163,74,0.15); }
+      50%       { box-shadow: 0 0 0 3px rgba(22,163,74,0.18), 0 0 24px 4px rgba(22,163,74,0.28); }
+    }
+
+    .clearance-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(22,163,74,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .clearance-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .clearance-rule {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #16a34a 80%);
+      opacity: 0.5;
+    }
+
+    .clearance-rule.right {
+      background: linear-gradient(90deg, #16a34a 20%, transparent);
+    }
+
+    .clearance-title-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: #22c55e;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .clearance-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 20px;
+      align-items: baseline;
+    }
+
+    .cl-key {
+      font-size: 11px;
+      font-weight: 600;
+      color: #166534;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .cl-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: #4ade80;
+      font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+    }
+
+    .cl-val.uuid {
+      font-size: 11px;
+      font-weight: 500;
+      color: #86efac;
+      word-break: break-all;
+    }
+
+    .cl-val.time {
+      font-size: 13px;
+      color: #4ade80;
+    }
+
+    .clearance-notify {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #14532d;
+      font-size: 11px;
+      color: #4ade80;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .clearance-notify::before {
+      content: '→';
+      color: #16a34a;
+      font-weight: 700;
+    }
+
+    /* ── OTA bottom bar ─────────────────────────────────────── */
+    .ota-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #15803d;
+      border-top: 2px solid #16a34a;
+      padding: 11px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 20;
+      box-shadow: 0 -4px 16px rgba(22,163,74,0.25);
+    }
+
+    .ota-bar-status {
+      font-size: 13px;
+      font-weight: 600;
+      color: #dcfce7;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ota-bar-status .ref-code {
+      font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+      font-size: 12px;
+      color: #86efac;
+      font-weight: 500;
+    }
+
+    .btn-ota-next {
+      background: #166534;
+      color: #dcfce7;
+      border: 1.5px solid #22c55e;
+      padding: 7px 18px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-ota-next:hover {
+      background: #14532d;
+      border-color: #4ade80;
+      box-shadow: 0 0 10px rgba(74,222,128,0.25);
+    }
+
+    .btn-ota-next:active { background: #052e16; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 Oman OTA · Fawtara Platform</strong>The government authority validates the invoice, assigns an official clearance number, generates a QR code, and dispatches the clearance back to the ASP.</div>
+<div class="ota-shell">
+
+  <!-- ── OTA Header ──────────────────────────────────────────── -->
+  <header class="ota-header">
+    <span class="ota-flag">🇴🇲</span>
+    <div class="ota-brand">
+      <div class="ota-brand-name">Fawtara e-Invoicing System</div>
+      <div class="ota-brand-sub">Oman Tax Authority</div>
+    </div>
+    <div class="ota-divider-v"></div>
+    <span class="ota-system-label">Clearance Portal</span>
+    <div class="ota-header-right">
+      <span class="ota-phase-badge">Phase 1 · Large Taxpayers</span>
+      <span class="ota-live-dot">Live</span>
+    </div>
+  </header>
+
+  <!-- ── Content ─────────────────────────────────────────────── -->
+  <main class="ota-content">
+
+    <!-- ── Clearance Request Received ──────────────────────── -->
+    <div class="ota-card">
+      <div class="ota-card-head">
+        <span class="ota-card-head-label">Clearance Request Received</span>
+        <div class="ota-card-head-right">
+          <span>From ASP: <strong style="color:#7fa8d8;">Fynamics Tax Solutions</strong></span>
+          <span style="color:#1a3660;">·</span>
+          <span>Received: <span class="time-val">14:23:09</span></span>
+        </div>
+      </div>
+      <div class="ota-card-body">
+        <div class="req-grid">
+          <div class="req-col">
+            <div class="req-row">
+              <span class="req-key">Invoice Ref</span>
+              <span class="req-val highlight">SINV-2026-00042</span>
+            </div>
+            <div class="req-row">
+              <span class="req-key">Seller</span>
+              <span class="req-val">Al Noor Trading LLC<span class="vat-num">OM9001234567</span></span>
+            </div>
+            <div class="req-row">
+              <span class="req-key">Total</span>
+              <span class="req-val amount-row">OMR 1,439.550<span class="vat-part">VAT: OMR 68.550 · 5%</span></span>
+            </div>
+          </div>
+          <div class="req-col">
+            <div class="req-row">
+              <span class="req-key">Type</span>
+              <span class="req-val"><span class="type-badge">Tax Invoice (380)</span></span>
+            </div>
+            <div class="req-row">
+              <span class="req-key">Buyer</span>
+              <span class="req-val">Gulf Horizons Co. LLC<span class="vat-num">OM8876543210</span></span>
+            </div>
+            <div class="req-row" style="border-bottom:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OTA Clearance Checks ─────────────────────────────── -->
+    <div class="ota-card">
+      <div class="checks-head">OTA Clearance Checks</div>
+      <div class="checks-list">
+        <div class="check-item"><span class="check-icon">✓</span> Seller VAT registration active</div>
+        <div class="check-item"><span class="check-icon">✓</span> Buyer entity registered in Oman</div>
+        <div class="check-item"><span class="check-icon">✓</span> Invoice number not previously submitted (no duplicate)</div>
+        <div class="check-item"><span class="check-icon">✓</span> Tax amount matches 5% of taxable amount</div>
+        <div class="check-item"><span class="check-icon">✓</span> UBL 2.1 schema compliant</div>
+        <div class="check-item"><span class="check-icon">✓</span> Invoice date within submission window</div>
+        <div class="check-item"><span class="check-icon">✓</span> Seller Peppol ID resolved</div>
+      </div>
+    </div>
+
+    <!-- ── Clearance Granted ─────────────────────────────────── -->
+    <div class="clearance-card">
+      <div class="clearance-title-row">
+        <div class="clearance-rule"></div>
+        <span class="clearance-title-text">Clearance Granted</span>
+        <div class="clearance-rule right"></div>
+      </div>
+      <div class="clearance-grid">
+        <span class="cl-key">OTA Reference</span>
+        <span class="cl-val">OTA-CLR-2026-8821</span>
+        <span class="cl-key">UUID</span>
+        <span class="cl-val uuid">3f7a9c14-8e2b-4d61-b5f3-9c0a7e821d46</span>
+        <span class="cl-key">Cleared at</span>
+        <span class="cl-val time">14:23:11 · 23 June 2026</span>
+      </div>
+      <div class="clearance-notify">
+        Clearance notification dispatched to Fynamics ASP
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ── Bottom Bar ───────────────────────────────────────────── -->
+  <div class="ota-bottom-bar">
+    <div class="ota-bar-status">
+      ✅ OTA Clearance issued — Reference <span class="ref-code">OTA-CLR-2026-8821</span>
+    </div>
+    <button class="btn-ota-next" onclick="window.parent.postMessage({action:'next'}, '*')">
+      Next: Clearance Return →
+    </button>
+  </div>
+
+</div>
+</body>
+</html>

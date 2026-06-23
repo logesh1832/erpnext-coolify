@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloud Gateway — Portal Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Screen hint ── */
+    .screen-hint {
+      position: fixed; top: 8px; right: 12px; z-index: 9999;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(13,148,136,0.3);
+      border-radius: 8px;
+      padding: 8px 14px;
+      max-width: 310px;
+      font-size: 11.5px;
+      color: #94a3b8;
+      line-height: 1.5;
+      pointer-events: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .screen-hint strong {
+      color: #2dd4bf;
+      font-size: 10px;
+      display: block;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(15,23,42,0.98);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-square {
+      width: 36px;
+      height: 36px;
+      background: #0d9488;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: #2dd4bf;
+      margin-left: 5px;
+    }
+
+    .topbar-right {
+      font-size: 11.5px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .topbar-right .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #0d9488;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* ── Main layout ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 16px 40px;
+    }
+
+    /* ── Login card ── */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      padding: 40px 36px 32px;
+      box-shadow:
+        0 4px 6px rgba(0,0,0,0.07),
+        0 20px 40px rgba(0,0,0,0.22),
+        0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    /* Card header */
+    .card-header {
+      margin-bottom: 28px;
+    }
+
+    .badge-portal {
+      display: inline-block;
+      background: rgba(13,148,136,0.10);
+      color: #0d9488;
+      border: 1px solid rgba(13,148,136,0.25);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      padding: 3px 12px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+      letter-spacing: -0.4px;
+    }
+
+    .card-sub {
+      font-size: 13.5px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      letter-spacing: .1px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #0f172a;
+      background: #f8fafc;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      font-family: inherit;
+    }
+
+    .form-group input:focus {
+      border-color: #0d9488;
+      box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+      background: #fff;
+    }
+
+    .form-group input.readonly-field {
+      color: #94a3b8;
+      background: #f1f5f9;
+      cursor: default;
+    }
+
+    .form-group input[type="password"] {
+      letter-spacing: 3px;
+      font-size: 16px;
+    }
+
+    /* Sign In button */
+    .btn-signin {
+      width: 100%;
+      padding: 12px;
+      background: #0d9488;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      font-family: inherit;
+      letter-spacing: .1px;
+    }
+
+    .btn-signin:hover:not(:disabled) {
+      background: #0f766e;
+      box-shadow: 0 4px 14px rgba(13,148,136,0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-signin:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-signin:disabled {
+      opacity: 0.85;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner.active { display: block; }
+
+    /* Card footer */
+    .card-footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #f1f5f9;
+      text-align: center;
+    }
+
+    .powered-by {
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(13,148,136,0.08);
+      color: #0d9488;
+      border: 1px solid rgba(13,148,136,0.2);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      letter-spacing: .3px;
+    }
+
+    /* Below card */
+    .below-card {
+      margin-top: 22px;
+      font-size: 13px;
+      color: #475569;
+      text-align: center;
+    }
+
+    .below-card a {
+      color: #2dd4bf;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .below-card a:hover {
+      color: #0d9488;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen hint -->
+  <div class="screen-hint">
+    <strong>📍 Cloud Gateway · Portal Login</strong>
+    Clients with no ERP or legacy systems get a dedicated Cloud Gateway account. They log in here to create and submit OTA-compliant invoices directly — no ERP integration needed.
+  </div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-square" style="font-size:13px;">CG</div>
+      <div>
+        <span class="brand-name">Cloud Gateway</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="dot"></span>
+      Oman OTA Fawtara · Certified ASP Partner
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Login card -->
+    <div class="card">
+
+      <div class="card-header">
+        <div class="badge-portal">E-Invoice Portal</div>
+        <h1 class="card-title">Sign in to your account</h1>
+        <p class="card-sub">Manage and submit OTA-compliant invoices</p>
+      </div>
+
+      <form onsubmit="return false;">
+
+        <div class="form-group">
+          <label for="companyId">Company Account ID</label>
+          <input
+            type="text"
+            id="companyId"
+            class="readonly-field"
+            value="HOR-2026-OM"
+            readonly
+            tabindex="-1"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            value="finance@horizontrading.om"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value="password"
+          />
+        </div>
+
+        <button class="btn-signin" id="signInBtn" type="submit" onclick="handleSignIn()">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">Sign In</span>
+        </button>
+
+      </form>
+
+      <div class="card-footer">
+        <p class="powered-by">Cloud Gateway Portal</p>
+        <div class="tags">
+          <span class="tag">73 OTA fields</span>
+          <span class="tag">UBL 2.1</span>
+          <span class="tag">Real-time clearance</span>
+        </div>
+      </div>
+
+    </div><!-- /.card -->
+
+    <div class="below-card">
+      Don't have an account? <a href="#">Contact us to get started →</a>
+    </div>
+
+  </main>
+
+  <script>
+    function handleSignIn() {
+      var btn = document.getElementById('signInBtn');
+      var spinner = document.getElementById('spinner');
+      var btnText = document.getElementById('btnText');
+
+      btn.disabled = true;
+      spinner.classList.add('active');
+      btnText.textContent = 'Authenticating…';
+
+      setTimeout(function () {
+        window.parent.postMessage({ action: 'next' }, '*');
+      }, 900);
+    }
+  </script>
+
+</body>
+</html>

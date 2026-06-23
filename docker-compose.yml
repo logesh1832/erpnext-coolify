@@ -137,6 +137,17 @@ services:
     expose:
       - "80"
 
+  demos:
+    build:
+      context: ./demos
+    networks:
+      - frappe_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+    expose:
+      - "80"
+
   queue-long:
     image: frappe/erpnext:v15
     networks:

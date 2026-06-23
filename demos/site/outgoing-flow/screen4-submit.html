@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SINV-2026-00042 — Ready to Submit</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { overflow: hidden; display: flex; height: 100vh; }
+    .erp-form { padding-bottom: 70px; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 ERPNext · Invoice Submission</strong>Clicking Submit triggers the E-Invoice plugin to package the invoice and push it to the Cloud Gateway in real time.</div>
+
+  <div class="erp-shell">
+
+    <!-- ── Sidebar ──────────────────────────────────────── -->
+    <aside class="erp-sidebar">
+      <div class="erp-logo">frappe <span>ERPNext</span></div>
+      <div class="erp-nav-section">
+        <div class="erp-nav-item">
+          <span class="nav-icon">🏠</span> Home
+        </div>
+        <div class="erp-nav-item active">
+          <span class="nav-icon">💰</span> Accounts
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">📦</span> Stock
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">🛒</span> Buying
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">💼</span> Selling
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">⚙️</span> Settings
+        </div>
+      </div>
+      <div style="margin-top:auto; padding:14px 18px; border-top:1px solid #2d3748;">
+        <div style="font-size:11px; color:#68d391; display:flex; align-items:center; gap:6px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#68d391;flex-shrink:0;display:inline-block;"></span>
+          E-Invoice Plugin: Installed ✓
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Area ─────────────────────────────────────── -->
+    <div class="erp-main">
+
+      <!-- Toolbar — no plugin banner (already configured) -->
+      <div class="erp-toolbar">
+        <div>
+          <div class="erp-breadcrumb">
+            <span>Accounts</span>
+            <span class="sep">›</span>
+            <span>Sales Invoice</span>
+            <span class="sep">›</span>
+            <span style="color:#0f172a; font-weight:600;">SINV-2026-00042</span>
+          </div>
+          <div class="erp-doc-title" style="margin-top:2px;">SINV-2026-00042</div>
+        </div>
+        <div class="toolbar-actions">
+          <span class="badge-configured">✓ Plugin Configured</span>
+          <button class="btn btn-secondary">Save</button>
+          <button class="btn btn-success" id="toolbar-submit-btn" onclick="handleSubmit()">Submit Invoice</button>
+          <span class="status-badge status-submitted">Ready to Submit</span>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="erp-form">
+
+        <!-- Section 1: Invoice Details -->
+        <div class="form-section">
+          <div class="form-section-head">Invoice Details</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Customer</label>
+              <div class="field-value link">Al Habsi Trading LLC</div>
+            </div>
+            <div class="form-field">
+              <label>Invoice Date</label>
+              <div class="field-value">22 Jun 2026</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Customer Tax ID (VAT)</label>
+              <div class="field-value">OM1234567890</div>
+            </div>
+            <div class="form-field">
+              <label>Due Date</label>
+              <div class="field-value">22 Jul 2026</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Company</label>
+              <div class="field-value link">Wisright Technologies LLC</div>
+            </div>
+            <div class="form-field">
+              <label>Currency</label>
+              <div class="field-value">OMR</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Address -->
+        <div class="form-section">
+          <div class="form-section-head">Address</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Customer Address</label>
+              <div class="field-value">P.O. Box 441, Al Khuwair, Muscat, Oman</div>
+            </div>
+            <div class="form-field">
+              <label>Company Address</label>
+              <div class="field-value">Building 12, Qurum Business Park, Muscat, Oman</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Items -->
+        <div class="form-section">
+          <div class="form-section-head">Items</div>
+          <div style="overflow-x:auto;">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width:36px; padding-left:16px;">#</th>
+                  <th>Item Code</th>
+                  <th>Description</th>
+                  <th class="amount">Qty</th>
+                  <th class="amount">Rate (OMR)</th>
+                  <th class="amount">Amount (OMR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:#94a3b8; padding-left:16px;">1</td>
+                  <td>
+                    <div style="font-weight:600; color:#0f172a;">WRK-STATION-SETUP</div>
+                    <div style="font-size:11px; color:#64748b;">Office Workstation Setup</div>
+                  </td>
+                  <td style="color:#64748b; font-size:12px;">Fully assembled workstation with monitor, keyboard, mouse</td>
+                  <td class="amount">5</td>
+                  <td class="amount">120.000</td>
+                  <td class="amount">600.000</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8; padding-left:16px;">2</td>
+                  <td>
+                    <div style="font-weight:600; color:#0f172a;">NET-INFRA-KIT</div>
+                    <div style="font-size:11px; color:#64748b;">Network Infrastructure Kit</div>
+                  </td>
+                  <td style="color:#64748b; font-size:12px;">Switches, patch panels, cabling and structured wiring kit</td>
+                  <td class="amount">2</td>
+                  <td class="amount">385.500</td>
+                  <td class="amount">771.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="totals-block">
+            <div class="totals-row">
+              <span class="tot-label">Net Total</span>
+              <span class="tot-value">OMR 1,371.000</span>
+            </div>
+            <div class="totals-row">
+              <span class="tot-label">VAT @ 5%</span>
+              <span class="tot-value">OMR 68.550</span>
+            </div>
+            <div class="grand-total-row">
+              <span class="tot-label">Grand Total</span>
+              <span class="tot-value">OMR 1,439.550</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: E-Invoice Status -->
+        <div class="form-section">
+          <div class="form-section-head">E-Invoice Status</div>
+          <div style="padding:14px 16px;">
+            <div class="einv-box">
+              <div class="einv-row" style="margin-bottom:10px;">
+                <span style="font-size:13px; font-weight:700; color:#059669;">✅ Configured</span>
+              </div>
+              <div class="einv-row">
+                <span class="einv-key">Mapped Fields</span>
+                <span class="einv-val">14 fields mapped</span>
+              </div>
+              <div class="einv-row">
+                <span class="einv-key">ASP</span>
+                <span class="einv-val">Fynamics Tax Solutions</span>
+              </div>
+              <div class="einv-msg">
+                Invoice will be submitted to OTA via <strong>Fynamics ASP</strong> automatically on submit.
+                The signed XML will be generated, transmitted, and the UUID written back to this record.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /erp-form -->
+
+      <!-- Bottom action bar -->
+      <div class="bottom-bar" style="left:220px;">
+        <div class="step-info">
+          <strong>Step 3 of 5</strong> — Submit the invoice to trigger OTA e-invoicing
+        </div>
+        <button class="btn btn-success btn-lg" id="bottom-submit-btn" onclick="handleSubmit()">Submit Invoice</button>
+      </div>
+
+    </div><!-- /erp-main -->
+  </div><!-- /erp-shell -->
+
+  <script>
+    var submitting = false;
+
+    function handleSubmit() {
+      if (submitting) return;
+      submitting = true;
+
+      var btns = [
+        document.getElementById('toolbar-submit-btn'),
+        document.getElementById('bottom-submit-btn')
+      ];
+
+      btns.forEach(function(btn) {
+        if (!btn) return;
+        btn.disabled = true;
+        btn.innerHTML = 'Submitting… <span class="spin">&#8635;</span>';
+        btn.style.background = '#047857';
+        btn.style.borderColor = '#047857';
+      });
+
+      setTimeout(function() {
+        window.parent.postMessage({ action: 'next' }, '*');
+      }, 1200);
+    }
+  </script>
+</body>
+</html>

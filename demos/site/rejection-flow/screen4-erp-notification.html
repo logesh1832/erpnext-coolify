@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SINV-2026-00089 — ERPNext Sales Invoice (Rejected by OTA)</title>
+  <link rel="stylesheet" href="../outgoing-flow/styles.css" />
+  <style>
+    body { overflow: hidden; display: flex; height: 100vh; }
+    .erp-form { padding-bottom: 70px; }
+
+    /* Screen hint — red tint */
+    .screen-hint {
+      position: fixed; top: 8px; right: 12px; z-index: 9999;
+      background: rgba(15,23,42,0.92); backdrop-filter: blur(6px);
+      border: 1px solid rgba(239,68,68,0.3); border-radius: 8px;
+      padding: 8px 14px; max-width: 310px; font-size: 11.5px;
+      color: #94a3b8; line-height: 1.5; pointer-events: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .screen-hint strong {
+      color: #f87171; font-size: 10px; display: block;
+      margin-bottom: 3px; text-transform: uppercase; letter-spacing: .6px;
+    }
+
+    /* Rejection banner */
+    .rejection-banner {
+      background: rgba(239,68,68,0.08);
+      border-left: 3px solid #ef4444;
+      padding: 12px 16px;
+      margin: 12px 16px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13.5px;
+      color: #0f172a;
+    }
+
+    /* E-Invoice rejection card */
+    .einv-rejection-card {
+      background: rgba(239,68,68,0.04);
+      border: 1.5px solid rgba(239,68,68,0.25);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .einv-rejection-header {
+      font-weight: 700;
+      font-size: 13.5px;
+      color: #ef4444;
+      margin-bottom: 4px;
+    }
+    .einv-rejection-meta {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .error-row {
+      border-top: 1px solid #fee2e2;
+      padding: 10px 0;
+    }
+    .error-row:first-of-type {
+      border-top: none;
+      padding-top: 4px;
+    }
+    .error-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .error-code {
+      font-family: monospace;
+      font-size: 11px;
+      background: rgba(239,68,68,0.1);
+      color: #ef4444;
+      padding: 2px 8px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .error-field {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .error-desc {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 5px;
+      padding-left: 2px;
+    }
+    .autofix-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(16,185,129,0.1);
+      color: #059669;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .autofix-badge-amber {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(245,158,11,0.1);
+      color: #d97706;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    .gateway-info-line {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(239,68,68,0.15);
+      font-size: 12px;
+      color: #0d9488;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen hint -->
+  <div class="screen-hint">
+    <strong>📍 ERPNext · Sales Invoice — Rejection Received</strong>
+    Cloud Gateway pushed the OTA rejection details back into ERPNext automatically. The accountant sees exactly what failed — no need to check the OTA portal separately.
+  </div>
+
+  <div class="erp-shell">
+
+    <!-- Sidebar -->
+    <aside class="erp-sidebar">
+      <div class="erp-logo">frappe <span>ERPNext</span></div>
+      <div class="erp-nav-section">
+        <div class="erp-nav-item">
+          <span class="nav-icon">🏠</span> Home
+        </div>
+        <div class="erp-nav-item active">
+          <span class="nav-icon">💰</span> Accounts
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">📦</span> Stock
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">🛒</span> Buying
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">💼</span> Selling
+        </div>
+        <div class="erp-nav-item">
+          <span class="nav-icon">⚙️</span> Settings
+        </div>
+      </div>
+      <div style="margin-top:auto; padding:14px 18px; border-top:1px solid #2d3748;">
+        <div style="font-size:11px; color:#68d391; display:flex; align-items:center; gap:6px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:#68d391;flex-shrink:0;display:inline-block;"></span>
+          E-Invoice Plugin: Installed ✓
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Area -->
+    <div class="erp-main">
+
+      <!-- Toolbar -->
+      <div class="erp-toolbar">
+        <div>
+          <div class="erp-breadcrumb">
+            <span>Accounts</span>
+            <span class="sep">›</span>
+            <span>Sales Invoice</span>
+            <span class="sep">›</span>
+            <span style="color:#0f172a; font-weight:600;">SINV-2026-00089</span>
+          </div>
+          <div class="erp-doc-title" style="margin-top:2px;">SINV-2026-00089</div>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-secondary">Save</button>
+          <button class="btn btn-secondary">Amend</button>
+          <span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:3px 12px;font-size:12px;font-weight:600;">
+            Rejected by OTA
+          </span>
+        </div>
+      </div>
+
+      <!-- Rejection banner -->
+      <div class="rejection-banner">
+        <span style="font-size:17px; flex-shrink:0;">❌</span>
+        <span>
+          <strong>OTA Fawtara Rejected this invoice — 3 errors found.</strong>
+          Cloud Gateway is preparing auto-fixes. Review details below.
+        </span>
+      </div>
+
+      <!-- Form -->
+      <div class="erp-form">
+
+        <!-- Section 1: Invoice Details -->
+        <div class="form-section">
+          <div class="form-section-head">Invoice Details</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Customer</label>
+              <div class="field-value link">Al Sharqi Contracting Co.</div>
+            </div>
+            <div class="form-field">
+              <label>Invoice Date</label>
+              <div class="field-value">23 Jun 2026</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Customer Tax ID (VAT)</label>
+              <div class="field-value" style="color:#ef4444;">OM9988776655</div>
+            </div>
+            <div class="form-field">
+              <label>Due Date</label>
+              <div class="field-value">23 Jul 2026</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Company</label>
+              <div class="field-value link">Wisright Technologies LLC</div>
+            </div>
+            <div class="form-field">
+              <label>Currency</label>
+              <div class="field-value">OMR</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Items -->
+        <div class="form-section">
+          <div class="form-section-head">Items</div>
+          <div style="overflow-x:auto;">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width:36px; padding-left:16px;">#</th>
+                  <th>Item Code</th>
+                  <th>Description</th>
+                  <th class="amount">Qty</th>
+                  <th class="amount">Rate (OMR)</th>
+                  <th class="amount">Amount (OMR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:#94a3b8; padding-left:16px;">1</td>
+                  <td>
+                    <div style="font-weight:600; color:#0f172a;">STEEL-BEAM-H200</div>
+                    <div style="font-size:11px; color:#64748b;">H200 Structural Steel Beam</div>
+                  </td>
+                  <td style="color:#64748b; font-size:12px;">Hot-rolled H200 steel beam, 6m length, S355 grade</td>
+                  <td class="amount">15</td>
+                  <td class="amount">145.000</td>
+                  <td class="amount">2,175.000</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8; padding-left:16px;">2</td>
+                  <td>
+                    <div style="font-weight:600; color:#0f172a;">ANCHOR-BOLT-KIT</div>
+                    <div style="font-size:11px; color:#64748b;">M24 Anchor Bolt Kit</div>
+                  </td>
+                  <td style="color:#64748b; font-size:12px;">M24 x 600mm anchor bolt set with nut and washer, box of 10</td>
+                  <td class="amount">3</td>
+                  <td class="amount">50.000</td>
+                  <td class="amount">150.000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="totals-block">
+            <div class="totals-row">
+              <span class="tot-label">Net Total</span>
+              <span class="tot-value">OMR 2,325.000</span>
+            </div>
+            <div class="totals-row">
+              <span class="tot-label">VAT @ 5%</span>
+              <span class="tot-value">OMR 116.250</span>
+            </div>
+            <div class="grand-total-row">
+              <span class="tot-label">Grand Total</span>
+              <span class="tot-value">OMR 2,441.250</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: E-Invoice Status — RED STATE -->
+        <div class="form-section">
+          <div class="form-section-head">E-Invoice Status</div>
+          <div style="padding:14px 16px;">
+            <div class="einv-rejection-card">
+
+              <div class="einv-rejection-header">❌ Rejected by OTA Fawtara</div>
+              <div class="einv-rejection-meta">
+                Received: 23 Jun 2026, 09:14:51<br/>
+                OTA Request ID: OTA-REQ-2026-447291
+              </div>
+
+              <!-- Error 1 -->
+              <div class="error-row" style="border-top:none; padding-top:4px;">
+                <div class="error-top">
+                  <span class="error-code">E-VAT-001</span>
+                  <span class="error-field">Buyer VAT Number</span>
+                </div>
+                <div class="error-desc">Invalid format — <code style="font-size:11px;">OM9988776655</code></div>
+                <span class="autofix-badge">🟢 Auto-fix queued by Cloud Gateway</span>
+              </div>
+
+              <!-- Error 2 -->
+              <div class="error-row">
+                <div class="error-top">
+                  <span class="error-code">E-ADDR-003</span>
+                  <span class="error-field">Buyer Street Address</span>
+                </div>
+                <div class="error-desc">Missing required field</div>
+                <span class="autofix-badge">🟢 Auto-fix queued by Cloud Gateway</span>
+              </div>
+
+              <!-- Error 3 -->
+              <div class="error-row">
+                <div class="error-top">
+                  <span class="error-code">E-TYPE-007</span>
+                  <span class="error-field">Invoice Type Code</span>
+                </div>
+                <div class="error-desc">Code mismatch (380 → 388 recommended)</div>
+                <span class="autofix-badge-amber">🟡 Cloud Gateway recommendation applied</span>
+              </div>
+
+              <!-- Info line -->
+              <div class="gateway-info-line">
+                <span style="font-size:14px;">✓</span>
+                <span>Cloud Gateway is preparing automatic corrections. Retry will be attempted shortly.</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /erp-form -->
+
+      <!-- Bottom bar -->
+      <div class="bottom-bar" style="left:220px;">
+        <div class="step-info">
+          <strong>Step 4 of 7</strong> — Rejection details visible in ERPNext
+        </div>
+        <button class="btn btn-primary" style="background:#d97706;color:#fff;" onclick="goNext()">
+          View Auto-Fix Details →
+        </button>
+      </div>
+
+    </div><!-- /erp-main -->
+  </div><!-- /erp-shell -->
+
+  <script>
+    function goNext() {
+      window.parent.postMessage({ action: 'next' }, '*');
+    }
+    function goPrev() {
+      window.parent.postMessage({ action: 'prev' }, '*');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fynamics Tax Solutions — ASP Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Colour tokens ── */
+    :root {
+      --bg-page:      #111827;
+      --bg-header:    #0f172a;
+      --bg-card:      #1e293b;
+      --bg-card-dark: #0f172a;
+      --border:       #334155;
+      --text-primary: #e2e8f0;
+      --text-muted:   #94a3b8;
+      --text-dim:     #475569;
+      --green:        #34d399;
+      --green-bg:     #064e3b;
+      --green-border: #065f46;
+      --amber:        #fbbf24;
+      --amber-bg:     #451a03;
+      --amber-border: #92400e;
+      --sky:          #38bdf8;
+      --mono:         'SF Mono', 'Fira Mono', 'Consolas', monospace;
+    }
+
+    /* ── Reset / shell ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .asp-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Top header bar ── */
+    .asp-header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .asp-logo {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--sky);
+      letter-spacing: -0.3px;
+    }
+
+    .asp-logo span {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 13px;
+      margin-left: 4px;
+    }
+
+    .asp-org-badge {
+      background: #1e293b;
+      color: var(--text-dim);
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    @keyframes pulse-live {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #450a0a;
+      color: #f87171;
+      border: 1px solid #7f1d1d;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      animation: pulse-live 1.6s ease-in-out infinite;
+      margin-left: auto;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #f87171;
+    }
+
+    /* ── Main content area ── */
+    .asp-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 20px 24px 0;
+      gap: 16px;
+    }
+
+    /* ── Top two-column grid ── */
+    .asp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Cards ── */
+    .asp-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+
+    .card-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Invoice info rows ── */
+    .info-row {
+      display: flex;
+      gap: 8px;
+      padding: 4px 0;
+      font-size: 12px;
+      border-bottom: 1px solid #1e3a5f18;
+    }
+    .info-row:last-child { border-bottom: none; }
+
+    .info-key {
+      color: var(--text-dim);
+      min-width: 90px;
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+
+    .info-val {
+      color: var(--text-primary);
+      font-family: var(--mono);
+      font-size: 11.5px;
+    }
+
+    .info-val.highlight {
+      color: var(--sky);
+    }
+
+    /* ── Validation check rows ── */
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 0;
+      border-bottom: 1px solid #0f172a55;
+      font-size: 12px;
+    }
+    .check-row:last-of-type { border-bottom: none; }
+
+    .chk-icon {
+      color: var(--green);
+      font-size: 13px;
+      flex-shrink: 0;
+      width: 16px;
+      text-align: center;
+    }
+
+    .chk-label {
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .checks-summary {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .checks-summary .sum-icon { font-size: 15px; }
+
+    /* ── Forward log panel ── */
+    .log-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .log-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .log-scroll {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .log-scroll::-webkit-scrollbar { width: 5px; }
+    .log-scroll::-webkit-scrollbar-track { background: transparent; }
+    .log-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .log-line {
+      display: flex;
+      gap: 16px;
+      padding: 4px 0;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.55;
+      border-bottom: 1px solid #1e293b80;
+    }
+    .log-line:last-child { border-bottom: none; }
+
+    .log-ts {
+      color: var(--text-dim);
+      flex-shrink: 0;
+      min-width: 60px;
+    }
+
+    .log-msg { color: var(--text-primary); }
+    .log-msg.ok { color: var(--green); }
+    .log-msg.info { color: var(--sky); }
+
+    /* Last log entry fades in */
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-line.animated {
+      opacity: 0;
+      animation: fade-in-up 0.5s ease-out 0.5s forwards;
+    }
+
+    /* ── Bottom status bar ── */
+    .asp-footer {
+      flex-shrink: 0;
+      background: var(--bg-header);
+      border-top: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .footer-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .footer-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── Next button ── */
+    .btn-next {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1d4ed8;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: background 0.15s;
+    }
+    .btn-next:hover { background: #1e40af; }
+    .btn-next:active { background: #1e3a8a; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 ASP · Fynamics Tax Solutions</strong>The Application Service Provider validates the invoice, applies digital signatures, and forwards it to the Oman OTA Fawtara platform for official clearance.</div>
+<div class="asp-shell">
+
+  <!-- ── Header ── -->
+  <header class="asp-header">
+    <div class="asp-logo">
+      Fynamics<span>Tax Solutions</span>
+    </div>
+    <div class="asp-org-badge">Accredited Service Provider · Oman OTA</div>
+    <div class="live-badge">
+      <span class="live-dot"></span>LIVE
+    </div>
+  </header>
+
+  <!-- ── Body ── -->
+  <main class="asp-body">
+
+    <!-- Top grid: Invoice received + ASP Validation -->
+    <div class="asp-grid">
+
+      <!-- Left: Invoice received -->
+      <div class="asp-card">
+        <div class="card-title">Invoice Received</div>
+
+        <div class="info-row">
+          <span class="info-key">From</span>
+          <span class="info-val highlight">Cloud Gateway</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Ref</span>
+          <span class="info-val">ASP-SUB-2026-4471</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Timestamp</span>
+          <span class="info-val">14:23:04 GST</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Format</span>
+          <span class="info-val">UBL 2.1 / Oman PINT</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Company</span>
+          <span class="info-val">Al Noor Trading LLC</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Invoice</span>
+          <span class="info-val highlight">SINV-2026-00042</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Total</span>
+          <span class="info-val">OMR 1,439.550</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">VAT</span>
+          <span class="info-val">OMR 68.550</span>
+        </div>
+      </div>
+
+      <!-- Right: ASP Validation -->
+      <div class="asp-card">
+        <div class="card-title">ASP Validation</div>
+
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">XML schema (UBL 2.1)</span>
+        </div>
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">Seller VAT registered</span>
+        </div>
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">Buyer entity validated</span>
+        </div>
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">Invoice number unique</span>
+        </div>
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">OMR currency 3-decimal</span>
+        </div>
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">Digital signature verified</span>
+        </div>
+        <div class="check-row">
+          <span class="chk-icon">✓</span>
+          <span class="chk-label">Mandatory fields complete</span>
+        </div>
+
+        <div class="checks-summary">
+          <span class="sum-icon">✅</span>
+          7 / 7 ASP checks passed
+        </div>
+      </div>
+
+    </div><!-- /asp-grid -->
+
+    <!-- Forwarding log panel -->
+    <div class="log-panel">
+      <div class="log-title">Forwarding to Oman Tax Authority</div>
+      <div class="log-scroll">
+
+        <div class="log-line">
+          <span class="log-ts">14:23:05</span>
+          <span class="log-msg info">Validating XML structure...</span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:23:05</span>
+          <span class="log-msg ok">✅ Validation passed</span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:23:06</span>
+          <span class="log-msg info">Establishing OTA network tunnel...</span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:23:07</span>
+          <span class="log-msg ok">✅ OTA connection established</span>
+        </div>
+        <div class="log-line">
+          <span class="log-ts">14:23:08</span>
+          <span class="log-msg info">Transmitting to Oman Tax Authority (Fawtara)...</span>
+        </div>
+        <div class="log-line animated">
+          <span class="log-ts">14:23:09</span>
+          <span class="log-msg ok">✅ Invoice queued in OTA system — awaiting clearance</span>
+        </div>
+
+      </div>
+    </div>
+
+  </main><!-- /asp-body -->
+
+  <!-- ── Footer ── -->
+  <footer class="asp-footer">
+    <div class="footer-status">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        Awaiting Clearance
+      </div>
+      <span class="footer-label">Invoice submitted to OTA — awaiting clearance decision</span>
+    </div>
+    <button class="btn-next" onclick="window.parent.postMessage({action:'next'}, '*')">
+      Next: OTA →
+    </button>
+  </footer>
+
+</div><!-- /asp-shell -->
+</body>
+</html>

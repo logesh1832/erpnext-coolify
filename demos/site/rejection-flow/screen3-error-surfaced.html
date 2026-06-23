@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Screen 3 — Error Triage</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0f1e;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-y: auto;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      padding-bottom: 70px;
+    }
+
+    /* ── App Bar ── */
+    .app-bar {
+      background: #0d1829;
+      border-bottom: 1px solid #1e3a5f;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .app-bar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .logo-badge {
+      background: #0d9488;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.5px;
+    }
+    .app-bar-title {
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .app-bar-title strong {
+      color: #e2e8f0;
+    }
+    .badge-action {
+      background: rgba(245,158,11,0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245,158,11,0.4);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 5px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Main Content ── */
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 20px 0;
+    }
+
+    /* ── Screen Hint ── */
+    .screen-hint {
+      position: fixed;
+      top: 62px;
+      right: 16px;
+      width: 280px;
+      background: rgba(13,24,41,0.95);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.55;
+      z-index: 90;
+    }
+    .screen-hint .hint-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fbbf24;
+      margin-bottom: 6px;
+      letter-spacing: 0.4px;
+    }
+    .screen-hint strong {
+      color: #fbbf24;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Summary Grid ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .summary-card.red   { border-left: 3px solid #ef4444; }
+    .summary-card.green { border-left: 3px solid #10b981; }
+    .summary-card.amber { border-left: 3px solid #f59e0b; }
+
+    .summary-number {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      line-height: 1;
+    }
+    .summary-card.red   .summary-number { color: #f87171; }
+    .summary-card.green .summary-number { color: #34d399; }
+    .summary-card.amber .summary-number { color: #fbbf24; }
+
+    .summary-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 14px;
+    }
+
+    /* ── Table ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr {
+      background: #0d1829;
+    }
+    thead th {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      padding: 12px 16px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid #1e293b;
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody td {
+      padding: 12px 16px;
+      color: #cbd5e1;
+      vertical-align: middle;
+    }
+    .code-cell {
+      font-family: "SF Mono", "Fira Mono", monospace;
+      font-size: 12px;
+      color: #7dd3fc;
+      font-weight: 600;
+    }
+    .field-cell {
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+    .action-cell {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .action-cell code {
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #a5b4fc;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-green {
+      background: rgba(16,185,129,0.12);
+      color: #34d399;
+    }
+    .badge-amber {
+      background: rgba(245,158,11,0.12);
+      color: #fbbf24;
+    }
+
+    /* ── Data Sources Card ── */
+    .data-sources {
+      background: rgba(13,148,136,0.06);
+      border: 1px solid rgba(13,148,136,0.2);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 14px;
+    }
+    .data-sources .ds-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #2dd4bf;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .data-sources ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .data-sources ul li::before {
+      content: "•";
+      color: #0d9488;
+      margin-right: 8px;
+    }
+    .data-sources ul li {
+      line-height: 1.5;
+    }
+
+    /* ── ERP Notification ── */
+    .erp-notif {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(16,185,129,0.05);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 0;
+    }
+    .erp-notif .notif-icon {
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .erp-notif .notif-body {
+      font-size: 13px;
+    }
+    .erp-notif .notif-title {
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 2px;
+    }
+    .erp-notif .notif-desc {
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .erp-notif .notif-desc span {
+      color: #94a3b8;
+    }
+
+    /* ── Bottom Bar ── */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0d1829;
+      border-top: 1px solid #1e3a5f;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+    }
+    .bottom-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-back {
+      background: transparent;
+      color: #64748b;
+      border: 1px solid #1e3a5f;
+      padding: 8px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-back:hover { color: #94a3b8; border-color: #334155; }
+    .bottom-status {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .bottom-status strong { color: #34d399; }
+    .btn-next {
+      background: #0d9488;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-next:hover { background: #0f766e; }
+
+    /* ── Step Indicator ── */
+    .step-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 0 4px;
+      margin-bottom: 16px;
+    }
+    .step {
+      width: 28px;
+      height: 4px;
+      border-radius: 2px;
+      background: #1e293b;
+    }
+    .step.done  { background: #0d9488; }
+    .step.active { background: #fbbf24; }
+  </style>
+</head>
+<body>
+
+  <!-- App Bar -->
+  <div class="app-bar">
+    <div class="app-bar-logo">
+      <span class="logo-badge">CG</span>
+      Cloud Gateway
+    </div>
+    <div class="app-bar-title">
+      Error Triage — <strong>SINV-2026-00089</strong>
+    </div>
+    <div class="badge-action">Action Required</div>
+  </div>
+
+  <!-- Screen Hint -->
+  <div class="screen-hint">
+    <div class="hint-label">📍 Cloud Gateway · Error Triage</div>
+    Cloud Gateway classified all <strong>3 OTA rejection errors</strong>.
+    <strong>2 are auto-fixable</strong> using field master data and formatting rules.
+    <strong>1 has a system recommendation</strong>.
+    No manual re-keying needed.
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+
+    <!-- Step bar -->
+    <div class="step-bar">
+      <div class="step done"></div>
+      <div class="step done"></div>
+      <div class="step active"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card red">
+        <div class="summary-number">3</div>
+        <div class="summary-label">Errors Caught</div>
+      </div>
+      <div class="summary-card green">
+        <div class="summary-number">2</div>
+        <div class="summary-label">Auto-Fixable</div>
+      </div>
+      <div class="summary-card amber">
+        <div class="summary-number">1</div>
+        <div class="summary-label">Needs Review</div>
+      </div>
+    </div>
+
+    <!-- Error Classification Table -->
+    <div class="card">
+      <div class="section-title">Error Classification — Ready for Auto-Fix</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Error Code</th>
+              <th>Field</th>
+              <th>Issue</th>
+              <th>Classification</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="code-cell">E-VAT-001</td>
+              <td class="field-cell">Buyer VAT No.</td>
+              <td>Invalid format</td>
+              <td><span class="badge badge-green">🟢 Auto-fix</span></td>
+              <td class="action-cell">Reformat <code>OM9988776655</code> → <code>OM-998877665-5</code></td>
+            </tr>
+            <tr>
+              <td class="code-cell">E-ADDR-003</td>
+              <td class="field-cell">Buyer Street</td>
+              <td>Missing value</td>
+              <td><span class="badge badge-green">🟢 Auto-fix</span></td>
+              <td class="action-cell">Pull from buyer master: <code>"Industrial Zone, Rusayl"</code></td>
+            </tr>
+            <tr>
+              <td class="code-cell">E-TYPE-007</td>
+              <td class="field-cell">Invoice Type</td>
+              <td>Code mismatch</td>
+              <td><span class="badge badge-amber">🟡 Recommended</span></td>
+              <td class="action-cell">Change <code>380</code> → <code>388</code> (Standard B2B)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Data Sources -->
+      <div class="data-sources">
+        <div class="ds-title">ℹ️ Data Sources for Auto-Fix</div>
+        <ul>
+          <li><strong>Buyer VAT:</strong> Reformatted using OTA standard pattern (OM-XXXXXXXXX-X)</li>
+          <li><strong>Buyer Address:</strong> Pulled from Customer Master "Al Sharqi Contracting Co." → Street: Industrial Zone, Rusayl</li>
+          <li><strong>Invoice Type:</strong> OTA recommendation (E-TYPE-007 advisory, not blocking)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ERP Notification -->
+    <div class="card" style="padding: 0; background: transparent; border: none; margin-bottom: 16px;">
+      <div class="erp-notif">
+        <div class="notif-icon">✅</div>
+        <div class="notif-body">
+          <div class="notif-title">ERPNext Notified</div>
+          <div class="notif-desc">
+            Error details have been pushed to Sales Invoice <span>SINV-2026-00089</span> in ERPNext.
+            Your accountant can see the rejection details in the <span>E-Invoice Status</span> section.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <div class="bottom-left">
+      <button class="btn-back" onclick="window.parent.postMessage({action:'prev'}, '*')">← Back</button>
+      <span class="bottom-status"><strong>All 3 errors classified</strong> — 0 blocking issues</span>
+    </div>
+    <button class="btn-next" onclick="window.parent.postMessage({action:'next'}, '*')">Apply Auto-Fixes →</button>
+  </div>
+
+</body>
+</html>

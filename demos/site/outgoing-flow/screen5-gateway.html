@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Invoice Cloud Gateway — Processing</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      background: #0f172a;
+      min-height: 100vh;
+      color: #cbd5e1;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Gateway content wrapper ── */
+    .gw-content {
+      padding: 28px 32px 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* ── Header ── */
+    .gw-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .gw-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: -0.3px;
+      margin-bottom: 5px;
+    }
+    .gw-subtitle {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    @keyframes pulse-red {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #450a0a;
+      color: #f87171;
+      border: 1px solid #7f1d1d;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      animation: pulse-red 1.6s ease-in-out infinite;
+      margin-top: 4px;
+    }
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #f87171;
+    }
+
+    /* ── Two-column grid ── */
+    .gw-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ── Dark card ── */
+    .dark-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .dc-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #64748b;
+      margin-bottom: 14px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid #334155;
+    }
+
+    /* ── Validation rows ── */
+    .val-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 12.5px;
+      border-bottom: 1px solid #1e2d42;
+    }
+    .val-row:last-child { border-bottom: none; }
+    .val-check {
+      color: #34d399;
+      flex-shrink: 0;
+      font-size: 13px;
+    }
+    .val-field {
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+      font-size: 11.5px;
+      min-width: 140px;
+    }
+    .val-arrow { color: #475569; font-size: 11px; }
+    .val-value { color: #e2e8f0; font-size: 12.5px; }
+
+    .pass-bar {
+      margin-top: 14px;
+      background: #052e16;
+      border: 1px solid #166534;
+      border-radius: 6px;
+      padding: 8px 14px;
+      color: #34d399;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ── Log rows ── */
+    .log-row {
+      display: flex;
+      gap: 12px;
+      padding: 5px 0;
+      font-size: 11.5px;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+      border-bottom: 1px solid #1e2d42;
+    }
+    .log-row:last-child { border-bottom: none; }
+    .log-ts  { color: #38bdf8; flex-shrink: 0; width: 64px; }
+    .log-msg { color: #cbd5e1; }
+    .log-msg.cleared { color: #34d399; font-weight: 700; }
+
+    /* ── XML section ── */
+    .xml-section { }
+    .xml-sec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .xml-sec-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+    .xml-valid-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    pre.xml-code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+      font-size: 11.5px;
+      line-height: 1.7;
+      max-height: 280px;
+      overflow-y: auto;
+      overflow-x: auto;
+      white-space: pre;
+      background: #020c17;
+      padding: 16px 20px;
+      border-radius: 8px;
+      border: 1px solid #1e3a5f;
+      margin: 0;
+      color: #e2e8f0;
+    }
+    pre.xml-code::-webkit-scrollbar { width: 5px; height: 5px; }
+    pre.xml-code::-webkit-scrollbar-track { background: #0a1628; }
+    pre.xml-code::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+
+    .xt  { color: #f472b6; }   /* tag names */
+    .xa  { color: #a78bfa; }   /* attribute names */
+    .xav { color: #34d399; }   /* attribute values */
+    .xv  { color: #e2e8f0; }   /* text content */
+    .xd  { color: #475569; }   /* declarations / namespaces */
+
+    /* ── Footer ── */
+    .gw-footer {
+      margin-top: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 32px 18px;
+      background: #0b1628;
+      border-top: 1px solid #1e293b;
+      flex-shrink: 0;
+    }
+    .gf-left { }
+    .gf-status {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .gf-uuid {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+      color: #64748b;
+      margin-top: 3px;
+    }
+    .btn-gw-next {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 9px 22px;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s;
+    }
+    .btn-gw-next:hover { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 Cloud Gateway · Middleware Layer</strong>Receives invoices from all connected ERPs, converts them to signed UBL 2.1 XML, and routes each one to the ASP for OTA submission.</div>
+
+  <div class="gw-content">
+
+    <!-- ── Header ──────────────────────────────────────── -->
+    <div class="gw-header">
+      <div>
+        <div class="gw-title">⚡ E-Invoice Cloud Gateway</div>
+        <div class="gw-subtitle">Processing: SINV-2026-00042 · Wisright Technologies LLC · 22 Jun 2026</div>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        LIVE
+      </div>
+    </div>
+
+    <!-- ── Two-column grid ─────────────────────────────── -->
+    <div class="gw-grid">
+
+      <!-- Left: OTA Field Validation -->
+      <div class="dark-card">
+        <div class="dc-title">OTA Field Validation</div>
+
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">seller_vat_id</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">OM9876543210</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">seller_name</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">Wisright Technologies LLC</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">buyer_vat_id</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">OM1234567890</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">buyer_name</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">Al Habsi Trading LLC</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">invoice_number</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">SINV-2026-00042</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">invoice_date</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">2026-06-22</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">invoice_type</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">380 (Tax Invoice)</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">currency</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">OMR</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">taxable_amount</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">1371.000</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">tax_amount</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">68.550</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">total_amount</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">1439.550</span>
+        </div>
+        <div class="val-row">
+          <span class="val-check">✓</span>
+          <span class="val-field">line_items</span>
+          <span class="val-arrow">→</span>
+          <span class="val-value">2 lines validated</span>
+        </div>
+
+        <div class="pass-bar">73 / 73 fields passed ✓</div>
+      </div>
+
+      <!-- Right: Submission Status -->
+      <div class="dark-card">
+        <div class="dc-title">Submission Status</div>
+
+        <div class="log-row">
+          <span class="log-ts">14:22:58</span>
+          <span class="log-msg">Invoice received from ERPNext connector</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:22:58</span>
+          <span class="log-msg">Schema validation started (73 fields)</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:22:59</span>
+          <span class="log-msg">✓ All 73 fields validated</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:22:59</span>
+          <span class="log-msg">UUID assigned: 3f7a9c14-8e2b-4d61-b5f3-9c0a7e821d46</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:22:59</span>
+          <span class="log-msg">UBL 2.1 XML generated (Oman PINT)</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:23:00</span>
+          <span class="log-msg">QR code generated</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:23:00</span>
+          <span class="log-msg">Submitted to Fynamics ASP →</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:23:01</span>
+          <span class="log-msg">Connecting to Fynamics ASP...</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:23:02</span>
+          <span class="log-msg cleared">✅ Authenticated — ASP session established</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:23:03</span>
+          <span class="log-msg">Transmitting UBL 2.1 XML to Fynamics...</span>
+        </div>
+        <div class="log-row">
+          <span class="log-ts">14:23:04</span>
+          <span class="log-msg cleared">✅ ASP accepted — Reference: ASP-SUB-2026-4471</span>
+        </div>
+      </div>
+
+    </div><!-- /.gw-grid -->
+
+    <!-- ── XML Panel ────────────────────────────────────── -->
+    <div class="xml-section">
+      <div class="xml-sec-header">
+        <span class="xml-sec-title">Generated UBL 2.1 XML (Oman PINT)</span>
+        <span class="xml-valid-badge">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#052e16"/><path d="M6 10l3 3 5-5" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Schema Valid
+        </span>
+      </div>
+      <pre class="xml-code"><span class="xd">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="xt">&lt;Invoice</span> <span class="xa">xmlns</span>=<span class="xav">"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"</span>
+         <span class="xa">xmlns:cac</span>=<span class="xav">"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"</span>
+         <span class="xa">xmlns:cbc</span>=<span class="xav">"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"</span><span class="xt">&gt;</span>
+  <span class="xt">&lt;cbc:UBLVersionID&gt;</span><span class="xv">2.1</span><span class="xt">&lt;/cbc:UBLVersionID&gt;</span>
+  <span class="xt">&lt;cbc:CustomizationID&gt;</span><span class="xv">urn:peppol:pint:billing-1@om-1</span><span class="xt">&lt;/cbc:CustomizationID&gt;</span>
+  <span class="xt">&lt;cbc:ProfileID&gt;</span><span class="xv">urn:peppol:bis:billing</span><span class="xt">&lt;/cbc:ProfileID&gt;</span>
+  <span class="xt">&lt;cbc:ID&gt;</span><span class="xv">SINV-2026-00042</span><span class="xt">&lt;/cbc:ID&gt;</span>
+  <span class="xt">&lt;cbc:UUID&gt;</span><span class="xv">3f7a9c14-8e2b-4d61-b5f3-9c0a7e821d46</span><span class="xt">&lt;/cbc:UUID&gt;</span>
+  <span class="xt">&lt;cbc:IssueDate&gt;</span><span class="xv">2026-06-22</span><span class="xt">&lt;/cbc:IssueDate&gt;</span>
+  <span class="xt">&lt;cbc:InvoiceTypeCode</span> <span class="xa">listID</span>=<span class="xav">"UN/ECE 1001 Subset"</span><span class="xt">&gt;</span><span class="xv">380</span><span class="xt">&lt;/cbc:InvoiceTypeCode&gt;</span>
+  <span class="xt">&lt;cbc:DocumentCurrencyCode&gt;</span><span class="xv">OMR</span><span class="xt">&lt;/cbc:DocumentCurrencyCode&gt;</span>
+  <span class="xt">&lt;cbc:TaxCurrencyCode&gt;</span><span class="xv">OMR</span><span class="xt">&lt;/cbc:TaxCurrencyCode&gt;</span>
+  <span class="xt">&lt;cac:AccountingSupplierParty&gt;</span>
+    <span class="xt">&lt;cac:Party&gt;</span>
+      <span class="xt">&lt;cac:PartyIdentification&gt;</span>
+        <span class="xt">&lt;cbc:ID</span> <span class="xa">schemeID</span>=<span class="xav">"VAT"</span><span class="xt">&gt;</span><span class="xv">OM9876543210</span><span class="xt">&lt;/cbc:ID&gt;</span>
+      <span class="xt">&lt;/cac:PartyIdentification&gt;</span>
+      <span class="xt">&lt;cac:PartyName&gt;</span><span class="xt">&lt;cbc:Name&gt;</span><span class="xv">Wisright Technologies LLC</span><span class="xt">&lt;/cbc:Name&gt;</span><span class="xt">&lt;/cac:PartyName&gt;</span>
+    <span class="xt">&lt;/cac:Party&gt;</span>
+  <span class="xt">&lt;/cac:AccountingSupplierParty&gt;</span>
+  <span class="xt">&lt;cac:AccountingCustomerParty&gt;</span>
+    <span class="xt">&lt;cac:Party&gt;</span>
+      <span class="xt">&lt;cac:PartyIdentification&gt;</span>
+        <span class="xt">&lt;cbc:ID</span> <span class="xa">schemeID</span>=<span class="xav">"VAT"</span><span class="xt">&gt;</span><span class="xv">OM1234567890</span><span class="xt">&lt;/cbc:ID&gt;</span>
+      <span class="xt">&lt;/cac:PartyIdentification&gt;</span>
+      <span class="xt">&lt;cac:PartyName&gt;</span><span class="xt">&lt;cbc:Name&gt;</span><span class="xv">Al Habsi Trading LLC</span><span class="xt">&lt;/cbc:Name&gt;</span><span class="xt">&lt;/cac:PartyName&gt;</span>
+    <span class="xt">&lt;/cac:Party&gt;</span>
+  <span class="xt">&lt;/cac:AccountingCustomerParty&gt;</span>
+  <span class="xt">&lt;cac:TaxTotal&gt;</span>
+    <span class="xt">&lt;cbc:TaxAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">68.550</span><span class="xt">&lt;/cbc:TaxAmount&gt;</span>
+    <span class="xt">&lt;cac:TaxSubtotal&gt;</span>
+      <span class="xt">&lt;cbc:TaxableAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">1371.000</span><span class="xt">&lt;/cbc:TaxableAmount&gt;</span>
+      <span class="xt">&lt;cbc:TaxAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">68.550</span><span class="xt">&lt;/cbc:TaxAmount&gt;</span>
+      <span class="xt">&lt;cac:TaxCategory&gt;</span>
+        <span class="xt">&lt;cbc:ID&gt;</span><span class="xv">S</span><span class="xt">&lt;/cbc:ID&gt;</span>
+        <span class="xt">&lt;cbc:Percent&gt;</span><span class="xv">5</span><span class="xt">&lt;/cbc:Percent&gt;</span>
+      <span class="xt">&lt;/cac:TaxCategory&gt;</span>
+    <span class="xt">&lt;/cac:TaxSubtotal&gt;</span>
+  <span class="xt">&lt;/cac:TaxTotal&gt;</span>
+  <span class="xt">&lt;cac:LegalMonetaryTotal&gt;</span>
+    <span class="xt">&lt;cbc:LineExtensionAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">1371.000</span><span class="xt">&lt;/cbc:LineExtensionAmount&gt;</span>
+    <span class="xt">&lt;cbc:TaxExclusiveAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">1371.000</span><span class="xt">&lt;/cbc:TaxExclusiveAmount&gt;</span>
+    <span class="xt">&lt;cbc:TaxInclusiveAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">1439.550</span><span class="xt">&lt;/cbc:TaxInclusiveAmount&gt;</span>
+    <span class="xt">&lt;cbc:PayableAmount</span> <span class="xa">currencyID</span>=<span class="xav">"OMR"</span><span class="xt">&gt;</span><span class="xv">1439.550</span><span class="xt">&lt;/cbc:PayableAmount&gt;</span>
+  <span class="xt">&lt;/cac:LegalMonetaryTotal&gt;</span>
+<span class="xt">&lt;/Invoice&gt;</span></pre>
+    </div><!-- /.xml-section -->
+
+  </div><!-- /.gw-content -->
+
+  <!-- ── Footer ───────────────────────────────────────── -->
+  <div class="gw-footer">
+    <div class="gf-left">
+      <div class="gf-status">
+        ⏳ Invoice submitted to ASP — awaiting OTA clearance
+      </div>
+      <div class="gf-uuid">UUID: 3f7a9c14-8e2b-4d61-b5f3-9c0a7e821d46</div>
+    </div>
+    <button class="btn-gw-next" onclick="window.parent.postMessage({action:'next'},'*')">
+      Next: ASP →
+    </button>
+  </div>
+
+</body>
+</html>

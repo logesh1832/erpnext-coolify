@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fynamics ASP — Incoming Invoice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0c1222;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* ASP Header */
+    .asp-header {
+      background: #0a0f1e;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid #1e3060;
+      flex-shrink: 0;
+    }
+    .asp-logo { font-size: 16px; font-weight: 800; color: #a78bfa; letter-spacing: -0.3px; }
+    .asp-logo span { color: #64748b; font-weight: 400; font-size: 13px; margin-left: 4px; }
+    .asp-badge {
+      background: #1e1040;
+      border: 1px solid #4c1d95;
+      color: #a78bfa;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .asp-header-right { margin-left: auto; font-size: 12px; color: #475569; }
+
+    /* Sub-header */
+    .asp-subheader {
+      background: #0f172a;
+      padding: 10px 24px;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .inbox-badge {
+      background: #7c3aed;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .asp-subheader h2 { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+    .asp-subheader .ts { font-size: 11px; color: #475569; margin-left: auto; }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Check grid */
+    .check-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .check-card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 14px 16px;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeUp 0.35s ease forwards;
+    }
+    .check-card:nth-child(1) { animation-delay: 0.05s; }
+    .check-card:nth-child(2) { animation-delay: 0.2s; }
+    .check-card:nth-child(3) { animation-delay: 0.4s; }
+    .check-card:nth-child(4) { animation-delay: 0.6s; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .check-card-head {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 12px;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .ci-icon { flex-shrink: 0; font-size: 13px; }
+    .ci-text { color: #cbd5e1; }
+    .ci-text strong { color: #f1f5f9; }
+    .ci-sub { font-size: 10px; color: #475569; margin-top: 2px; font-family: 'Courier New', monospace; }
+
+    /* Routing card */
+    .routing-card {
+      background: #111827;
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeUp 0.35s ease forwards;
+      animation-delay: 0.9s;
+    }
+    .routing-head {
+      background: #0d1829;
+      border-bottom: 1px solid #1e293b;
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .routing-body { padding: 14px 16px; }
+    .routing-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 12px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .routing-row:last-child { border-bottom: none; }
+    .rr-label { color: #64748b; }
+    .rr-value { color: #e2e8f0; font-weight: 600; }
+    .rr-value.mono { font-family: 'Courier New', monospace; font-size: 11px; color: #a78bfa; }
+    .rr-value.green { color: #34d399; }
+
+    .bottom-bar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: #0a0f1e;
+      border-top: 1px solid #1e3060;
+    }
+    .bottom-status { font-size: 13px; font-weight: 600; color: #a78bfa; }
+    .btn-next {
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-next:hover { background: #6d28d9; }
+  </style>
+</head>
+<body>
+  <style>
+    .screen-hint{position:fixed;top:8px;right:12px;z-index:9999;background:rgba(15,23,42,0.92);backdrop-filter:blur(6px);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 14px;max-width:310px;font-size:11.5px;color:#94a3b8;line-height:1.5;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .screen-hint strong{color:#60a5fa;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px}
+  </style>
+  <div class="screen-hint"><strong>📍 ASP · Fynamics Tax Solutions</strong>Fynamics receives the cleared invoice from OTA, verifies digital signatures, and forwards the payload to the Cloud Gateway for auto-delivery into the buyer's ERP.</div>
+
+  <div class="asp-header">
+    <div class="asp-logo">Fynamics<span>Tax Solutions</span></div>
+    <div class="asp-badge">ASP Portal</div>
+    <div class="asp-header-right">Buyer: Wisright Technologies LLC &nbsp;·&nbsp; OM1234567890</div>
+  </div>
+
+  <div class="asp-subheader">
+    <div class="inbox-badge">INCOMING</div>
+    <h2>Invoice Received from OTA — INV-ALN-2026-00847</h2>
+    <div class="ts">15:04:22</div>
+  </div>
+
+  <div class="content">
+
+    <div class="check-grid">
+      <div class="check-card">
+        <div class="check-card-head">🔐 Signature Verification</div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">OTA digital signature <strong>valid</strong></div>
+            <div class="ci-sub">RSA-SHA256 · cert: OTA-ROOT-2025</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">UBL 2.1 schema <strong>passes</strong></div>
+            <div class="ci-sub">XSD validation: 0 errors</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">Clearance reference <strong>verified</strong></div>
+            <div class="ci-sub">OTA-CLR-2026-9104</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="check-card">
+        <div class="check-card-head">📋 Invoice Parsing</div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">Supplier VAT ID extracted</div>
+            <div class="ci-sub">OM9876543210</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">Line items parsed — <strong>3 items</strong></div>
+            <div class="ci-sub">Total: OMR 2,982.000</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">VAT breakdown extracted</div>
+            <div class="ci-sub">5% @ OMR 142.000</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="check-card">
+        <div class="check-card-head">🏢 Buyer Matching</div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">Buyer VAT ID matched to account</div>
+            <div class="ci-sub">Wisright Technologies LLC</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">ERP connector found: <strong>ERPNext</strong></div>
+            <div class="ci-sub">Cloud Gateway integration active</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="check-card">
+        <div class="check-card-head">📤 Routing</div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">Payload forwarded to <strong>Cloud Gateway</strong></div>
+            <div class="ci-sub">POST /incoming/asp/invoice</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <span class="ci-icon">✅</span>
+          <div>
+            <div class="ci-text">Gateway acknowledged receipt</div>
+            <div class="ci-sub">HTTP 202 · 38ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="routing-card">
+      <div class="routing-head">Forwarded Payload Summary</div>
+      <div class="routing-body">
+        <div class="routing-row">
+          <span class="rr-label">Event</span>
+          <span class="rr-value green">incoming_invoice_cleared</span>
+        </div>
+        <div class="routing-row">
+          <span class="rr-label">Clearance Ref</span>
+          <span class="rr-value mono">OTA-CLR-2026-9104</span>
+        </div>
+        <div class="routing-row">
+          <span class="rr-label">UUID</span>
+          <span class="rr-value mono">9a3f1c72-4e8b-4d0a-bc21-6f7e3d9a5c18</span>
+        </div>
+        <div class="routing-row">
+          <span class="rr-label">Gateway Endpoint</span>
+          <span class="rr-value mono">POST /incoming/asp/invoice</span>
+        </div>
+        <div class="routing-row">
+          <span class="rr-label">Gateway Response</span>
+          <span class="rr-value green">202 Accepted</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-bar">
+    <div class="bottom-status">✅ Invoice validated &amp; routed to Cloud Gateway</div>
+    <button class="btn-next" onclick="window.parent.postMessage({action:'next'}, '*')">Cloud Gateway →</button>
+  </div>
+</body>
+</html>
