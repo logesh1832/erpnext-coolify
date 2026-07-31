@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASP Exchange — Nazm Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-hub" data-surface="hub" data-nav="asp"
+      data-step="hub-asp"
+      data-crumbs="Operations / ASP Exchange"
+      data-hint="The document goes to the group's accredited service provider, which acknowledges it and reports it onward to the Tax Authority.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1>ASP Exchange</h1>
+          <span class="pill pill-ok"><i class="dot"></i>Acknowledged</span>
+        </div>
+        <p class="page-sub">Oman reports invoices after issue — no authority clears them beforehand.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-sm">Download receipt</button>
+        <a class="btn btn-sm btn-primary" href="document.html">View document</a>
+      </div>
+    </div>
+
+    <div class="mb16" id="banner"></div>
+
+    <div class="card mb16">
+      <div class="card-body">
+        <div id="pipe"></div>
+      </div>
+    </div>
+
+    <div class="split-wide">
+      <div>
+
+        <section style="margin-top:0">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">What was sent and what came back</h2>
+              <span class="pill pill-info"><i class="dot"></i>mTLS</span>
+            </div>
+            <div class="card-body">
+              <div class="row wrap" style="gap:18px">
+                <div class="stack">
+                  <span class="tiny dim">HTTP status</span>
+                  <span class="row-tight" style="margin-top:3px">
+                    <span style="font-size:22px;font-weight:600;letter-spacing:-.02em" class="num">202</span>
+                    <span class="pill pill-ok"><i class="dot"></i>Accepted</span>
+                  </span>
+                </div>
+                <div class="vdivider"></div>
+                <div class="stack">
+                  <span class="tiny dim">Round trip</span>
+                  <span class="num" style="font-size:22px;font-weight:600;letter-spacing:-.02em">412 <span style="font-size:13px;color:var(--text-lo)">ms</span></span>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px">
+                <div>
+                  <div class="tiny dim" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px">Sent</div>
+                  <div id="sentKv"></div>
+                </div>
+                <div>
+                  <div class="tiny dim" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px">Came back</div>
+                  <div id="backKv"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">What happened after that</h2>
+              <span id="mlsPill"></span>
+            </div>
+            <div class="card-body">
+              <p class="small muted mb16">The receipt confirms custody, not delivery. The delivery confirmation
+                arrives minutes later, once the buyer's access point has taken the document.</p>
+              <div id="mlsTimeline"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <div>
+
+        <section style="margin-top:0">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">The service provider</h2>
+              <span class="beacon" style="--tone:var(--ok)"><i></i></span>
+            </div>
+            <div class="card-body">
+              <div id="connKv"></div>
+              <div class="divider"></div>
+              <div class="tiny dim" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:9px">
+                What it does not do</div>
+              <div class="stack" style="gap:9px" id="notList"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  /* ---- page-local detail (not in data.js) -------------------------------- */
+  const EXCHANGE = {
+    payloadSize: '8.9 KB',
+    transmissionId: 'TRX-OM-2026-0731-118842',
+    docsToday: 1079
+  };
+
+  const PIPE_TIMES = [
+    '09:14:02', '09:14:04', '09:14:05', '09:14:06',
+    '09:14:06', '09:14:07', '09:16:41'
+  ];
+
+  const MLS_STEPS = [
+    { name: 'Submitted to the service provider', t: '31 Jul 2026 · 09:14:07', st: 'ok',
+      body: 'The signed document was handed over on a secured connection.' },
+    { name: 'Receipt issued', t: '31 Jul 2026 · 09:14:07', st: 'ok',
+      body: 'Acknowledgement ASP-OM-2026-0731-44718 — the provider has taken custody.' },
+    { name: 'Delivered to the buyer', t: '31 Jul 2026 · 09:16:41', st: 'ok',
+      body: 'The buyer\'s access point confirmed receipt. This is the business outcome.' },
+    { name: 'Reported to the Tax Authority', t: '31 Jul 2026 · 09:16:44', st: 'ok',
+      body: 'Reference OTA-RPT-2026-0731-99204. The reporting obligation is discharged.' }
+  ];
+
+  const NOT_DOES = [
+    'It does not approve the invoice — there is no pre-clearance.',
+    'It does not judge VAT treatment — the Hub settles that before sending.',
+    'It does not hold the record — the Hub keeps the document and the proof.'
+  ];
+
+  /* ---- render ------------------------------------------------------------ */
+  document.getElementById('banner').innerHTML = notice('ok',
+    '<b>Delivered and reported.</b> ANT-SINV-2026-04471 was acknowledged as ' +
+    '<span class="mono" style="color:var(--ok);font-weight:600">' + ASP.ackNo + '</span> ' +
+    'and confirmed delivered at ' + ASP.mlsAt + '.');
+
+  document.getElementById('pipe').innerHTML = pipeline(6, { times: PIPE_TIMES });
+
+  document.getElementById('sentKv').innerHTML = kv([
+    ['Document', '<span class="mono" style="font-size:11px">ANT-SINV-2026-04471</span>'],
+    ['To', '<span style="font-size:11.5px">Accredited service provider</span>'],
+    ['Format', 'UBL 2.1 · PINT-OM'],
+    ['Size', '<span class="num">' + EXCHANGE.payloadSize + '</span>'],
+    ['Sent at', '<span class="num" style="font-size:11.5px">' + ASP.sentAt + '</span>']
+  ], true);
+
+  document.getElementById('backKv').innerHTML = kv([
+    ['Acknowledgement', '<span class="mono" style="font-size:11px;word-break:break-all;display:inline-block">' + ASP.ackNo + '</span>'],
+    ['Peppol reference', '<span class="mono" style="font-size:11px">' + ASP.ref + '</span>'],
+    ['Transmission', '<span class="mono" style="font-size:11px;word-break:break-all;display:inline-block">' + EXCHANGE.transmissionId + '</span>'],
+    ['Received at', '<span class="num" style="font-size:11.5px">' + ASP.ackAt + '</span>'],
+    ['Retries', '<span class="num">0</span>']
+  ], true);
+
+  document.getElementById('mlsPill').innerHTML = pill('delivered', ASP.mls);
+  document.getElementById('mlsTimeline').innerHTML = timeline(MLS_STEPS);
+
+  document.getElementById('connKv').innerHTML = kv([
+    ['Provider', '<span style="font-size:11.5px">Accredited service provider · licence ASP-OM-014</span>'],
+    ['Connection', pill('connected')],
+    ['Documents today', '<span class="num">' + EXCHANGE.docsToday.toLocaleString() + '</span>'],
+    ['Government status', pill('ok', ASP.govStatus)],
+    ['Reporting reference', '<span class="mono" style="font-size:11px">OTA-RPT-2026-0731-99204</span>'],
+    ['Retention', '7 years — in country']
+  ]);
+
+  document.getElementById('notList').innerHTML = NOT_DOES.map(n => `
+    <div class="row" style="align-items:flex-start;gap:9px">
+      <svg style="width:14px;height:14px;flex:none;margin-top:2px;color:var(--fail)" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      <span class="small" style="line-height:1.5">${n}</span>
+    </div>`).join('');
+</script>
+</body>
+</html>

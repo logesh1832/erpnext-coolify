@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Companies — Nazm Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-hub" data-surface="hub" data-nav="tenants"
+      data-step="hub-tenants"
+      data-crumbs="Configuration / Companies"
+      data-hint="Each company is a configuration record — its ERP, how we connect to it, and how much of its mapping is done. Adding company 90 is a form, not a project.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1>Companies</h1>
+          <span class="pill pill-accent"><i class="dot"></i>89 onboarded</span>
+          <span class="pill pill-ok"><i class="dot"></i>61 live</span>
+        </div>
+        <p class="page-sub">Every company in the group, configured and monitored from this one console.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-sm btn-primary">Onboard a company</button>
+      </div>
+    </div>
+
+    <div class="grid g3 mb16" id="tiles"></div>
+
+    <section style="margin-top:0">
+      <div class="card card-tight">
+        <div class="card-head">
+          <div class="search" style="width:290px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input class="input input-sm" placeholder="Search company name">
+          </div>
+          <select class="select select-sm" style="width:auto">
+            <option>All statuses</option>
+            <option>Live</option>
+            <option>Onboarding</option>
+          </select>
+          <span class="right small dim nowrap">6 of 89 shown</span>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Company</th><th>ERP</th><th>How we connect</th>
+                <th style="min-width:150px">Mapping progress</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tenantRows"></tbody>
+          </table>
+        </div>
+        <div class="card-foot">
+          <span class="small dim">+ 83 more companies · 61 live · 24 still onboarding</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <div class="card-head">
+          <h2 class="grow">Three ways we connect</h2>
+          <span class="tag">No installation per company</span>
+        </div>
+        <div class="card-body stack" style="gap:12px" id="tiers"></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  /* --- page-local detail not held in the shared dataset -------------------- */
+  const TIER_INFO = [
+    { t: 1, n: 'Direct API',    count: 54, tone: 'var(--ok)',
+      d: 'The hub reads the ERP directly. Nothing installed on the company side.' },
+    { t: 2, n: 'On-site agent', count: 27, tone: 'var(--warn)',
+      d: 'A small agent runs on site and pushes documents out. No firewall opened inward.' },
+    { t: 3, n: 'File drop',     count: 8,  tone: 'var(--idle)',
+      d: 'Older systems export a file on a schedule and the hub picks it up.' }
+  ];
+
+  const CONNECT = {
+    1: 'Direct API',
+    2: 'On-site agent',
+    3: 'File drop'
+  };
+
+  /* --- tiles --------------------------------------------------------------- */
+  document.getElementById('tiles').innerHTML = [
+    stat({ label: 'Companies onboarded', value: GROUP.entities,
+           meta: 'One configuration record each', tone: 'var(--accent)' }),
+    stat({ label: 'Live', value: GROUP.live,
+           meta: 'Sending documents today', tone: 'var(--ok)' }),
+    stat({ label: 'Still onboarding', value: GROUP.onboarding,
+           meta: 'Mapping in progress', tone: 'var(--warn)' })
+  ].join('');
+
+  /* --- company table ------------------------------------------------------- */
+  document.getElementById('tenantRows').innerHTML = TENANTS.slice(0, 6).map(t => {
+    const mapPct = Math.round(t.mapped / t.mapTotal * 100);
+    const mapTone = mapPct === 100 ? 'var(--ok)' : mapPct >= 85 ? 'var(--accent)' : 'var(--warn)';
+    return `
+    <tr>
+      <td>
+        <a class="link" href="tenant-detail.html">${t.short}</a>
+        <div class="tiny dim">${t.city}</div>
+      </td>
+      <td><div class="nowrap">${t.erp}</div></td>
+      <td class="nowrap">
+        <span class="tier">T${t.tier}</span>
+        <span class="small" style="margin-left:6px">${CONNECT[t.tier]}</span>
+      </td>
+      <td>
+        <div class="row tiny mb8">
+          <span class="muted">fields</span>
+          <span class="right num" style="font-weight:600;color:${mapTone}">${t.mapped}/${t.mapTotal}</span>
+        </div>
+        ${bar(mapPct, mapTone)}
+      </td>
+      <td>${pill(t.status)}</td>
+    </tr>`;
+  }).join('');
+
+  /* --- how we connect ------------------------------------------------------ */
+  document.getElementById('tiers').innerHTML = TIER_INFO.map(x => `
+    <div class="row" style="gap:12px">
+      <span class="tier">T${x.t}</span>
+      <span style="font-weight:600;min-width:118px">${x.n}</span>
+      <span class="small muted grow">${x.d}</span>
+      <span class="num nowrap" style="font-weight:600;color:${x.tone}">${x.count}
+        <span class="tiny dim" style="font-weight:400">companies</span></span>
+    </div>`).join('');
+</script>
+</body>
+</html>

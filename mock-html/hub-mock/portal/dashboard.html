@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview — Al Nahda Trading · Nazm Tenant Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-portal" data-surface="portal" data-nav="dashboard"
+      data-step="portal-home"
+      data-crumbs="Al Nahda Trading LLC / Overview"
+      data-hint="The same platform, seen by one company. Al Nahda Trading sees only its own invoices — the other 88 companies are invisible to this user.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1>Overview</h1>
+          <span class="pill pill-warn"><i class="dot"></i>2 items need your action</span>
+        </div>
+        <p class="page-sub" id="pageSub"></p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-sm">Export my documents</button>
+      </div>
+    </div>
+
+    <div id="isolation" class="mb16"></div>
+
+    <div class="grid g3 mb16" id="tiles"></div>
+
+    <div class="split">
+      <div>
+
+        <section id="failures" style="margin-top:0">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">Needs my attention</h2>
+              <span class="pill pill-fail"><i class="dot"></i>2 to fix</span>
+            </div>
+            <div class="card-body stack" style="gap:14px" id="exceptions"></div>
+          </div>
+        </section>
+
+        <section id="invoices">
+          <div class="section-head">
+            <h2 class="grow">My invoices</h2>
+            <span class="small dim">Al Nahda Trading documents only</span>
+          </div>
+          <div class="card card-tight">
+            <div class="table-wrap">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>Invoice</th><th>Customer</th>
+                    <th class="r nowrap">Amount (OMR)</th><th>Status</th><th>Progress</th>
+                  </tr>
+                </thead>
+                <tbody id="invoiceRows"></tbody>
+              </table>
+            </div>
+            <div class="card-foot">
+              <span class="small dim" id="invoiceFoot"></span>
+              <a class="right small" style="color:var(--accent);font-weight:600" href="#">View all 412 documents →</a>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <div>
+
+        <section style="margin-top:0">
+          <div class="card">
+            <div class="card-head"><h2 class="grow">My organisation</h2></div>
+            <div class="card-body" id="org"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="card">
+            <div class="card-head"><h2 class="grow">Need help?</h2></div>
+            <div class="card-body stack" style="gap:12px" id="help"></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  /* ------------------------------------------------------------------
+     Everything on this page is derived from the single tenant ANT.
+     No group roll-up, no other entity, no cross-tenant navigation.
+     ------------------------------------------------------------------ */
+  const ME = tenant('ANT');
+
+  document.getElementById('pageSub').textContent =
+    ME.name + ' — 31 July 2026, 10:42 GST.';
+
+  document.getElementById('isolation').innerHTML = notice('info',
+    `<b>You are signed in to one company.</b> This portal shows Al Nahda Trading LLC and nothing else.
+     The scope is enforced in the data itself, so no screen, filter or export here can return another
+     company's documents.`);
+
+  /* --- stat tiles — Al Nahda's own numbers only --------------------- */
+  document.getElementById('tiles').innerHTML = [
+    stat({ label: 'Documents this month', value: ME.mtd.toLocaleString(),
+           meta: '1 – 31 July 2026', tone: 'var(--accent)' }),
+    stat({ label: 'Success rate', value: pct(ME.success),
+           meta: 'Target is 99.0%', tone: 'var(--warn)' }),
+    stat({ label: 'Needs attention', value: 2,
+           meta: 'Two causes you can fix yourself', tone: 'var(--fail)' })
+  ].join('');
+
+  /* --- my invoices --------------------------------------------------
+     Rows from the shared dataset (filtered to this tenant) plus this
+     entity's own additional documents held locally on the page.        */
+  const MY_EXTRA = [
+    { no: 'ANT-SINV-2026-04470', cust: 'Muscat Municipality',
+      date: '30 Jul 14:11', total: 53760.000, stage: 6, state: 'ok' }
+  ];
+
+  /* The invoice the walkthrough has followed since the ERP screen is
+     pinned to the top — everything after it is ordered newest first.   */
+  const HERO = 'ANT-SINV-2026-04471';
+
+  const MINE = INVOICES.filter(i => i.tenant === 'ANT').map(i => ({
+    no: i.no,
+    cust: CUSTOMERS[i.cust].name,
+    date: i.created.replace(/:\d\d$/, ''),
+    total: i.total,
+    stage: i.stage, state: i.state
+  })).concat(MY_EXTRA).sort((a, b) => {
+    if (a.no === HERO) return -1;
+    if (b.no === HERO) return 1;
+    return a.date < b.date ? 1 : -1;
+  }).slice(0, 5);
+
+  const STATE_PILL = { ok: 'acknowledged', active: 'active', failed: 'failed' };
+
+  document.getElementById('invoiceRows').innerHTML = MINE.map(r => `
+    <tr>
+      <td><a class="link id nowrap" href="#">${r.no}</a></td>
+      <td class="small">${r.cust}</td>
+      <td class="r num nowrap" style="font-weight:600">${omr(r.total)}</td>
+      <td>${r.state === 'ok' && r.stage === 6 ? pill('acknowledged')
+            : r.state === 'failed' ? pill('failed')
+            : pill(STATE_PILL[r.state] || 'pending')}</td>
+      <td>${pipeMini(r.stage, r.state)}</td>
+    </tr>`).join('');
+
+  document.getElementById('invoiceFoot').textContent =
+    'Showing ' + MINE.length + ' of 412 documents raised today by Al Nahda Trading LLC.';
+
+  /* --- exceptions — this entity fixes its own source data ----------- */
+  const MY_EXCEPTIONS = [
+    {
+      no: 'ANT-SINV-2026-04468', amount: 4275.000, tone: 'fail',
+      what: 'The buyer\'s VAT number is missing.',
+      plain: 'An Omani business invoice must carry the customer\'s VAT registration number. The customer master ' +
+             'record in your SAP has that field blank, so the invoice cannot be reported.',
+      fix: 'Add the VAT registration number to the customer master in SAP, then press Reprocess.',
+      affects: '2 documents share this cause'
+    },
+    {
+      no: 'ANT-SINV-2026-04465', amount: 9135.000, tone: 'fail',
+      what: 'The invoice total does not add up.',
+      plain: 'The total should be 9 135.000 but the document says 9 134.000 — a manual rounding line was added ' +
+             'in SAP, so the figures no longer reconcile.',
+      fix: 'Remove the rounding line in SAP, then press Reprocess.',
+      affects: '1 document shares this cause'
+    }
+  ];
+
+  document.getElementById('exceptions').innerHTML = MY_EXCEPTIONS.map(e => notice(e.tone, `
+    <div class="row wrap" style="gap:8px">
+      <b class="id" style="font-size:12.5px">${e.no}</b>
+      <span class="small dim">OMR ${omr(e.amount)}</span>
+    </div>
+    <div class="small mt8"><b>${e.what}</b> ${e.plain}</div>
+    <div class="small mt8"><b>What to do.</b> ${e.fix}</div>
+    <div class="row mt12" style="gap:8px">
+      <button class="btn btn-sm btn-primary">Reprocess</button>
+      <span class="right tiny dim">${e.affects}</span>
+    </div>`)).join('');
+
+  /* --- right rail: my organisation ---------------------------------- */
+  document.getElementById('org').innerHTML = kv([
+    ['Legal name', ME.name],
+    ['VAT number', `<span class="mono">${ME.vatin}</span>`],
+    ['ERP', `${ME.erp}`],
+    ['Live since', `January 2026`],
+    ['Last synchronisation', `<span class="row-tight" style="justify-content:flex-end">
+        <span class="beacon" style="--tone:var(--warn)"><i></i></span>${ME.sync}</span>`]
+  ]);
+
+  /* --- right rail: need help ---------------------------------------- */
+  document.getElementById('help').innerHTML = `
+    <div class="small"><b>You fix data problems.</b> A missing VAT number or a total that does not add up lives
+      in your own SAP — correct it there, then press Reprocess.</div>
+    <div class="small"><b>Group IT fixes platform problems.</b> A dead connector, an expired certificate or a
+      service provider outage is not yours to fix.</div>
+    <div class="small dim">Group IT service desk · einvoicing@alnahda.om · response within 2 hours.</div>
+    <div><button class="btn btn-sm btn-block">Raise a ticket with group IT</button></div>`;
+</script>
+</body>
+</html>

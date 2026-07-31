@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nazm — Centralized Integration Hub · guided walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/app.css">
+<style>
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 32px; }
+
+  .hero { padding: 68px 0 4px; position: relative; }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 400;
+    font-size: clamp(34px, 5.4vw, 58px); line-height: 1.06;
+    letter-spacing: -.02em; max-width: 15ch; margin-top: 26px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .lede { font-size: 15.5px; color: var(--text-mid); max-width: 58ch; margin-top: 18px; line-height: 1.62; }
+
+  .flow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 30px; }
+  .flow-item {
+    flex: 1; min-width: 150px; padding: 12px 14px; border-radius: var(--r-md);
+    background: var(--surface); border: 1px solid var(--line); position: relative;
+  }
+  .flow-item::after { content: ""; position: absolute; inset: auto 0 0 0; height: 2px; background: var(--tone); border-radius: 0 0 2px 2px; }
+  .flow-item .n { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-lo); }
+  .flow-item .v { font-size: 13.5px; font-weight: 600; margin-top: 5px; }
+
+  .acts { padding: 16px 0 80px; }
+  .act-head {
+    display: flex; align-items: baseline; gap: 12px;
+    margin: 36px 0 12px; padding-bottom: 9px; border-bottom: 1px solid var(--line);
+  }
+  .act-n { font-family: var(--font-display); font-size: 26px; color: var(--accent); line-height: 1; }
+  .act-t { font-size: 15.5px; font-weight: 600; }
+  .act-d { font-size: 12.5px; color: var(--text-lo); margin-left: auto; }
+
+  .step {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 16px; border: 1px solid var(--line); border-radius: var(--r-md);
+    background: var(--surface); margin-bottom: 7px;
+    transition: border-color .16s var(--ease), transform .16s var(--ease), box-shadow .16s var(--ease);
+  }
+  .step:hover { border-color: var(--accent-line); transform: translateX(3px); box-shadow: var(--shadow); }
+  .step .num {
+    width: 28px; height: 28px; flex: none; border-radius: 50%;
+    display: grid; place-items: center; font-size: 12px; font-weight: 700;
+    background: var(--accent-soft); color: var(--accent-hi); border: 1px solid var(--accent-line);
+    font-variant-numeric: tabular-nums;
+  }
+  .step .body { min-width: 0; flex: 1; }
+  .step .t { font-size: 14px; font-weight: 600; }
+  .step .b { font-size: 12.5px; color: var(--text-mid); margin-top: 2px; }
+  .step .go { flex: none; color: var(--accent); font-size: 15px; opacity: 0; transition: opacity .16s var(--ease); }
+  .step:hover .go { opacity: 1; }
+
+  .badge {
+    flex: none; font-size: 9.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    padding: 2.5px 8px; border-radius: 20px; border: 1px solid;
+  }
+  .badge.erp    { color: #2E6BA8; border-color: rgba(46,107,168,.32);  background: rgba(46,107,168,.07); }
+  .badge.hub    { color: #8A6A22; border-color: rgba(138,106,34,.32);  background: rgba(138,106,34,.07); }
+  .badge.portal { color: #0F6E64; border-color: rgba(15,110,100,.32);  background: rgba(15,110,100,.07); }
+
+  @media (max-width: 720px) {
+    .wrap { padding: 0 20px; }
+    .act-d, .step .b { display: none; }
+  }
+</style>
+</head>
+<body class="surface-hub" data-shell="off">
+
+<header class="wrap hero">
+  <div class="row-tight">
+    <span class="brand-mark" style="width:30px;height:30px;font-size:18px">N</span>
+    <span class="stack">
+      <span class="brand-name" style="font-size:15px">Nazm Hub</span>
+      <span class="brand-sub">Centralized Integration Console</span>
+    </span>
+  </div>
+
+  <h1>Eighty-nine companies.<br>One way to comply.</h1>
+
+  <p class="lede">A thirteen-step walkthrough: an invoice leaves a company's ERP, becomes a compliant
+    e-invoice, is reported to the Tax Authority, and comes back with its acknowledgement — all without
+    the finance team leaving the system they already use.</p>
+
+  <div class="row wrap mt24" style="gap:9px;padding:0">
+    <a class="btn btn-primary btn-lg" href="erp/invoices.html">Start the walkthrough →</a>
+    <span class="small dim" style="margin-left:6px">Roughly 5 minutes · use Next, or the ← → arrow keys</span>
+  </div>
+
+  <div class="flow">
+    <div class="flow-item" style="--tone:#2E6BA8"><div class="n">Starts in</div><div class="v">The company's ERP</div></div>
+    <div class="flow-item" style="--tone:#8A6A22"><div class="n">Handled by</div><div class="v">Nazm Hub</div></div>
+    <div class="flow-item" style="--tone:#1D8A5E"><div class="n">Reported via</div><div class="v">Accredited provider</div></div>
+    <div class="flow-item" style="--tone:#2E6BA8"><div class="n">Ends in</div><div class="v">The same ERP invoice</div></div>
+  </div>
+</header>
+
+<main class="wrap acts">
+
+  <div class="act-head">
+    <span class="act-n">I</span><span class="act-t">It starts in their system</span>
+    <span class="act-d">Nothing about how they work changes</span>
+  </div>
+  <div id="a1"></div>
+
+  <div class="act-head">
+    <span class="act-n">II</span><span class="act-t">The Hub does the work</span>
+    <span class="act-d">One platform serving every company</span>
+  </div>
+  <div id="a2"></div>
+
+  <div class="act-head">
+    <span class="act-n">III</span><span class="act-t">Each company sees only itself</span>
+    <span class="act-d">And the answer comes back</span>
+  </div>
+  <div id="a3"></div>
+
+  <p class="tiny dim mt24" style="text-align:center">
+    Demonstration prototype · fictional entities and illustrative data<br>
+    Built against PINT-OM v1.0.2 · Oman Tax Authority e-invoicing programme
+  </p>
+</main>
+
+<script>
+const STEPS = [
+  { g:'a1', s:'erp',    t:'Invoice raised in the ERP',   b:'A normal sales invoice, created and submitted as usual.', h:'erp/invoices.html' },
+  { g:'a2', s:'hub',    t:'Signing in to the Hub',       b:'The group platform team logs in.',                        h:'hub/login.html' },
+  { g:'a2', s:'hub',    t:'Group dashboard',             b:'All 89 companies, one screen.',                           h:'hub/dashboard.html' },
+  { g:'a2', s:'hub',    t:'The companies onboarded',     b:'Each one a configuration record, not an installation.',   h:'hub/tenants.html' },
+  { g:'a2', s:'hub',    t:'One company in detail',       b:'Its ERP, how we connect, how much is set up.',            h:'hub/tenant-detail.html' },
+  { g:'a2', s:'hub',    t:'Mapping ERP fields',          b:'Their field names pointed at the standard ones.',         h:'hub/mapping.html' },
+  { g:'a2', s:'hub',    t:'Invoices being processed',    b:'Where every document is, right now.',                     h:'hub/queue.html' },
+  { g:'a2', s:'hub',    t:'XML built and checked',       b:'The official format, validated before it is sent.',       h:'hub/document.html' },
+  { g:'a2', s:'hub',    t:'Sent to the ASP',             b:'Transmitted, acknowledged, reported to the Authority.',   h:'hub/asp.html' },
+  { g:'a2', s:'hub',    t:'The full record',             b:'Every document, searchable and retained.',                h:'hub/history.html' },
+  { g:'a3', s:'portal', t:'A company signs in',          b:'Its own credentials, its own login.',                     h:'portal/login.html' },
+  { g:'a3', s:'portal', t:'What that company sees',      b:'Only its own data. The other 88 are invisible.',          h:'portal/dashboard.html' },
+  { g:'a3', s:'erp',    t:'Result back in the ERP',      b:'Acknowledgement, reference and QR on the original invoice.', h:'erp/sync.html' }
+];
+
+const LABEL = { erp: 'Their ERP', hub: 'Nazm Hub', portal: 'One company' };
+
+STEPS.forEach((s, i) => {
+  document.getElementById(s.g).insertAdjacentHTML('beforeend', `
+    <a class="step" href="${s.h}">
+      <span class="num">${i + 1}</span>
+      <span class="body"><span class="t">${s.t}</span><div class="b">${s.b}</div></span>
+      <span class="badge ${s.s}">${LABEL[s.s]}</span>
+      <span class="go">→</span>
+    </a>`);
+});
+</script>
+</body>
+</html>

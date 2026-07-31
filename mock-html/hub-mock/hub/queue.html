@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Processing Queue — Nazm Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-hub" data-surface="hub" data-nav="queue"
+      data-step="hub-queue"
+      data-crumbs="Operations / Processing Queue"
+      data-hint="Every invoice currently being processed, and the stage it has reached. Each company has its own lane, so one company's problem never holds up another.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1>Processing Queue</h1>
+          <span class="pill pill-info"><i class="dot"></i>55 in flight</span>
+        </div>
+        <p class="page-sub">Where every invoice is, right now.</p>
+      </div>
+      <div class="page-actions">
+        <select class="select select-sm" style="width:auto">
+          <option>Auto-refresh · 5 s</option><option>Paused</option>
+        </select>
+      </div>
+    </div>
+
+    <section style="margin-top:0">
+      <div class="card mb16">
+        <div class="card-head">
+          <h2 class="grow">Pipeline stages</h2>
+          <span class="tag">55 documents</span>
+          <span class="small dim">31 Jul 2026, 10:42 GST</span>
+        </div>
+        <div class="card-body">
+          <div id="pipeFull"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid g3 mb16" id="tiles"></div>
+
+    <div class="card mb16">
+      <div class="card-body">
+        <div class="row wrap" style="gap:10px">
+          <div class="search grow" style="min-width:230px;max-width:340px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input class="input input-sm" id="fSearch" placeholder="Search by invoice number">
+          </div>
+          <select class="select select-sm" id="fTenant" style="width:auto;min-width:200px"></select>
+          <span class="right small dim" id="countNote">Showing 6 of 55 documents</span>
+        </div>
+      </div>
+    </div>
+
+    <section style="margin-top:0">
+      <div class="card card-tight mb16">
+        <div class="card-head">
+          <h2 class="grow">Documents in flight</h2>
+          <span class="pill pill-warn"><i class="dot"></i>6 retrying</span>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Invoice</th>
+                <th>Company</th>
+                <th>Stage</th>
+                <th>Progress</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="queueRows"></tbody>
+          </table>
+        </div>
+        <div class="card-foot">
+          <span class="small dim">6 of 55 shown · oldest document waiting 4 m 12 s</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="card">
+      <div class="card-head"><h2 class="grow">Per-company channels</h2><span class="tag">Queue depth</span></div>
+      <div class="card-body stack" style="gap:13px" id="channels"></div>
+      <div class="card-foot">
+        <span class="tiny dim">Each company has its own lane, so a backlog in one never delays another.</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  /* ---- stage distribution (documents currently sitting at each stage) ---- */
+  const STAGE_COUNT = [8, 6, 4, 9, 12, 11, 5];
+
+  document.getElementById('pipeFull').innerHTML = pipeline(4, {
+    times: STAGE_COUNT.map(n => `${n} ${n === 1 ? 'document' : 'documents'} here`)
+  });
+
+  document.getElementById('tiles').innerHTML = [
+    stat({ label: 'In queue', value: '55', meta: 'Across 61 live companies', tone: 'var(--accent)' }),
+    stat({ label: 'Oldest in queue', value: '4m 12s', meta: 'Waiting on the service provider', tone: 'var(--warn)' }),
+    stat({ label: 'Awaiting action', value: '21', meta: '18 company action · 3 platform', tone: 'var(--fail)' })
+  ].join('');
+
+  /* ---- filters ---- */
+  document.getElementById('fTenant').innerHTML =
+    '<option value="">All 89 companies</option>' +
+    TENANTS.map(t => `<option value="${t.id}">${t.short}</option>`).join('');
+
+  /* ---- queue table: six representative documents ---- */
+  const ROWS = INVOICES.slice(0, 6);
+  const FAIL_BG = 'background:color-mix(in srgb, var(--fail) 7%, transparent)';
+
+  function stateKey(s) {
+    return s === 'ok' ? 'completed' : s === 'active' ? 'active' : s === 'held' ? 'queued' : 'failed';
+  }
+
+  document.getElementById('queueRows').innerHTML = ROWS.map(inv => `
+    <tr style="${inv.state === 'failed' ? FAIL_BG : ''}">
+      <td class="nowrap">
+        <a class="link id" href="document.html">${inv.no}</a>
+        <div class="tiny dim num">${inv.created}</div>
+      </td>
+      <td class="nowrap">${tenantChip(inv.tenant)}</td>
+      <td class="nowrap">
+        <div style="font-weight:600">${STAGES[inv.stage]}</div>
+        <div class="tiny dim">Stage ${inv.stage + 1} of ${STAGES.length}</div>
+      </td>
+      <td>${pipeMini(inv.stage, inv.state)}</td>
+      <td>${pill(stateKey(inv.state))}</td>
+    </tr>`).join('');
+
+  /* ---- per-company channels ---- */
+  const CHANNELS = [
+    { id: 'GLC', depth: 27, cap: 40, note: 'Buyer VAT gaps — mapping fix pending', tone: 'var(--fail)' },
+    { id: 'ANT', depth: 11, cap: 60, note: 'Healthy, draining at 180/hr', tone: 'var(--ok)' },
+    { id: 'SFP', depth: 8,  cap: 30, note: 'Nightly burst', tone: 'var(--warn)' },
+    { id: 'MSI', depth: 4,  cap: 50, note: 'Healthy', tone: 'var(--ok)' }
+  ];
+  document.getElementById('channels').innerHTML = CHANNELS.map(c => {
+    const t = tenant(c.id);
+    return `<div>
+      <div class="row tiny mb8">
+        <span style="font-weight:600;color:var(--text-hi)">${t.short}</span>
+        <span class="right num muted">${c.depth} / ${c.cap}</span>
+      </div>
+      ${bar(Math.round(c.depth / c.cap * 100), c.tone)}
+      <div class="tiny dim mt4">${c.note}</div>
+    </div>`;
+  }).join('') + `
+    <div class="divider" style="margin:2px 0"></div>
+    <div class="row tiny">
+      <span class="muted">Gulf Logistics holds 49% of the whole queue</span>
+      <span class="right" style="color:var(--ok);font-weight:600">0 other companies blocked</span>
+    </div>`;
+
+  /* ---- filtering ---- */
+  const rows = Array.from(document.querySelectorAll('#queueRows tr'));
+  function applyFilters() {
+    const q = document.getElementById('fSearch').value.trim().toLowerCase();
+    const tn = document.getElementById('fTenant').value;
+    let shown = 0;
+    rows.forEach((tr, i) => {
+      const d = ROWS[i];
+      const hit = (!q || d.no.toLowerCase().includes(q)) && (!tn || d.tenant === tn);
+      tr.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    document.getElementById('countNote').textContent =
+      'Showing ' + shown + ' of 55 documents';
+  }
+  document.getElementById('fSearch').addEventListener('input', applyFilters);
+  document.getElementById('fTenant').addEventListener('change', applyFilters);
+</script>
+</body>
+</html>

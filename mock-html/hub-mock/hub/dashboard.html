@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Group Dashboard — Nazm Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-hub" data-surface="hub" data-nav="dashboard"
+      data-step="hub-dashboard"
+      data-crumbs="Operations / Group Dashboard"
+      data-hint="Every company in the group on one screen. Volumes, failures and who needs attention today.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1>Group Dashboard</h1>
+          <span class="pill pill-ok"><i class="dot"></i>All systems operational</span>
+        </div>
+        <p class="page-sub">Al Nahda Group — 31 July 2026, 10:42 GST.</p>
+      </div>
+      <div class="page-actions">
+        <select class="select select-sm" style="width:auto">
+          <option>Today</option><option>Last 7 days</option><option>Month to date</option>
+        </select>
+        <button class="btn btn-sm">Export</button>
+      </div>
+    </div>
+
+    <div class="grid g3 mb16" id="tiles"></div>
+
+    <div class="split-wide">
+      <div>
+        <section style="margin-top:0">
+          <div class="section-head">
+            <h2 class="grow">Companies in the group</h2>
+            <a class="small" style="color:var(--accent-hi)" href="tenants.html">View all 89 →</a>
+          </div>
+          <div class="card card-tight">
+            <div class="table-wrap">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>Company</th><th>ERP</th>
+                    <th class="r">Today</th><th class="r">Failed</th><th class="nowrap">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tenantRows"></tbody>
+              </table>
+            </div>
+            <div class="card-foot">
+              <span class="small dim">+ 84 more companies</span>
+              <span class="right"><a class="small" style="color:var(--accent-hi)" href="tenants.html">View all →</a></span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section style="margin-top:0">
+          <div class="section-head"><h2 class="grow">Recent activity</h2><span class="tag">Live</span></div>
+          <div class="card"><div class="card-body" id="activity"></div></div>
+        </section>
+
+        <section>
+          <div class="card">
+            <div class="card-head"><h2 class="grow">Attention required</h2><span class="pill pill-warn"><i class="dot"></i>2</span></div>
+            <div class="card-body stack" style="gap:11px">
+              <div class="notice notice-fail">
+                <svg class="notice-ico" viewBox="0 0 24 24" fill="none" stroke="var(--fail)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+                <div><b>14 validation failures</b> — Gulf Logistics<br>
+                  <span class="dim tiny">Buyer VAT identifier missing on 11 of 14.</span></div>
+              </div>
+              <div class="notice notice-warn">
+                <svg class="notice-ico" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+                <div><b>Onboarding behind schedule</b> — Barka Retail<br>
+                  <span class="dim tiny">22 of 43 fields mapped, cutover in 6 weeks.</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  document.getElementById('tiles').innerHTML = [
+    stat({ label: 'Companies live', value: '61<span style="font-size:15px;color:var(--text-lo)"> / 89</span>',
+           meta: '24 still onboarding', tone: 'var(--accent)' }),
+    stat({ label: 'Documents today', value: GROUP.todayTotal.toLocaleString(),
+           meta: '<span class="delta-up">▲ 12.4%</span> vs last Thursday', tone: 'var(--info)' }),
+    stat({ label: 'Failed', value: GROUP.todayFailed,
+           meta: '98.1% of today went through cleanly', tone: 'var(--fail)' })
+  ].join('');
+
+  document.getElementById('tenantRows').innerHTML = TENANTS.slice(0, 5).map(t => `
+    <tr>
+      <td>
+        <a class="link nowrap" href="tenant-detail.html">${t.short}</a>
+        <div class="tiny dim">${t.city}</div>
+      </td>
+      <td style="max-width:170px"><div class="small">${t.erp}</div></td>
+      <td class="r num">${t.today || '—'}</td>
+      <td class="r num" style="${t.failed ? 'color:var(--fail);font-weight:600' : ''}">${t.failed || '—'}</td>
+      <td class="nowrap">${pill(t.status)}
+        <div class="tiny dim row-tight" style="margin-top:3px">
+          <span class="beacon" style="--tone:${t.health === 'ok' ? 'var(--ok)' : 'var(--warn)'}"><i></i></span>${t.sync}
+        </div>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('activity').innerHTML = timeline(ACTIVITY.slice(0, 4).map(a => ({
+    name: a.title, t: a.t + ' · ' + a.tag, body: a.body, st: a.st
+  })));
+</script>
+</body>
+</html>

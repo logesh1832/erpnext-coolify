@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Al Nahda Trading LLC — Nazm Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-hub" data-surface="hub" data-nav="tenants"
+      data-step="hub-tenant"
+      data-crumbs="Configuration / Companies / Al Nahda Trading LLC"
+      data-hint="Everything on this page is configuration. No code is written to bring a new company on board.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1 id="ttl">Al Nahda Trading LLC</h1>
+          <span class="pill pill-ok"><i class="dot"></i>Live</span>
+          <span class="tier">T1</span>
+        </div>
+        <p class="page-sub" id="sub"></p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-sm">Edit configuration</button>
+        <a class="btn btn-sm btn-primary" href="mapping.html">Open Mapping Studio</a>
+      </div>
+    </div>
+
+    <div class="grid g3 mb16" id="tiles"></div>
+
+    <div class="split">
+
+      <div>
+        <section style="margin-top:0">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">Company information</h2>
+              <span class="tag">Registry record</span>
+            </div>
+            <div class="card-body" id="company"></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">How we connect</h2>
+              <span class="pill pill-ok"><i class="dot"></i>Connected</span>
+            </div>
+            <div class="card-body">
+              <div id="conn"></div>
+              <div class="mt16" id="conntest"></div>
+              <div class="code code-lines mt16" id="cfg"></div>
+            </div>
+            <div class="card-foot">
+              <span class="small dim">Credentials live in the platform vault and are never shown in the console.</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section style="margin-top:0">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">Mapping status</h2>
+              <span class="pill pill-ok"><i class="dot"></i>Complete</span>
+            </div>
+            <div class="card-body">
+              <div class="row" style="gap:16px">
+                <div class="donut" style="--p:100"><span>100%</span></div>
+                <div class="grow stack" style="gap:3px">
+                  <div style="font-size:19px;font-weight:600" class="num">47 / 47</div>
+                  <div class="tiny dim">fields resolved</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div id="mapkv"></div>
+            </div>
+            <div class="card-foot">
+              <a class="btn btn-sm btn-block" href="mapping.html">Open Mapping Studio →</a>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">Health</h2>
+              <span class="row-tight"><span class="beacon"><i></i></span><span class="tiny dim">30 days</span></span>
+            </div>
+            <div class="card-body" id="health"></div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  const T = TENANTS[0];
+
+  /* --- page-local detail not held in the shared dataset -------------------- */
+  const DETAIL = {
+    goLive: '12 Jan 2026',
+    endpoint: 'https://my340118.s4hana.ondemand.com/sap/opu/odata/sap/API_BILLING_DOCUMENT_SRV',
+    auth: 'OAuth 2.0 client credentials',
+    poll: 'Every 60 s · only what changed',
+    allowlist: 31,
+    rtt: 288,
+    profileVer: 'ANT/v7',
+    published: '18 Jun 2026 · by M. Al-Rawahi',
+    certExpiry: '14 Mar 2027'
+  };
+
+  /* --- header -------------------------------------------------------------- */
+  document.getElementById('sub').innerHTML =
+    `Running on ${T.erp}, live since ${DETAIL.goLive}.`;
+
+  /* --- tiles --------------------------------------------------------------- */
+  document.getElementById('tiles').innerHTML = [
+    stat({ label: 'Documents today', value: T.today, meta: 'Last received 10:38 GST', tone: 'var(--accent)' }),
+    stat({ label: 'Success rate', value: pct(T.success), meta: `${T.failed} failed today`, tone: 'var(--ok)' }),
+    stat({ label: 'Fields mapped', value: `${T.mapped} / ${T.mapTotal}`, meta: `Profile ${DETAIL.profileVer} · published`, tone: 'var(--ok)' })
+  ].join('');
+
+  /* --- company information ------------------------------------------------- */
+  document.getElementById('company').innerHTML = kv([
+    ['Legal name', T.name],
+    ['Company code', `<span class="id">${T.code}</span>`],
+    ['VAT identification number', `<span class="id">${T.vatin}</span>`],
+    ['Peppol participant ID', `<span class="id">${T.peppol}</span>`],
+    ['City', `${T.city}, Oman`],
+    ['Live since', DETAIL.goLive]
+  ]);
+
+  /* --- how we connect ------------------------------------------------------ */
+  document.getElementById('conn').innerHTML = kv([
+    ['ERP product', `${T.erp} <span class="id">${T.erpVer}</span>`],
+    ['Connector', `<span class="tier">T1</span> <span class="muted" style="font-weight:400">direct API — nothing installed on site</span>`],
+    ['Endpoint', `<span class="id" style="word-break:break-all">${DETAIL.endpoint}</span>`],
+    ['Authentication', DETAIL.auth],
+    ['How often we read', DETAIL.poll],
+    ['Fields we may read', `${DETAIL.allowlist} of 412 the ERP exposes`]
+  ]);
+
+  document.getElementById('conntest').innerHTML = notice('ok',
+    `<b>Connection test passed</b> — 31 Jul 2026 10:42 GST.
+     Read-only probe returned in <span class="num">${DETAIL.rtt} ms</span>. Write access not requested.`
+  );
+
+  /* --- connector config (short excerpt) ------------------------------------ */
+  const CFG = [
+    'company:       ANT-001            # Al Nahda Trading LLC',
+    'connector:     direct API',
+    'adapter:       sap-s4hana-cloud/odata-v4',
+    'endpoint:      https://my340118.s4hana.ondemand.com',
+    'auth:          oauth2_client_credentials',
+    'secret_ref:    vault://nazm/prod/ANT-001/client_secret   # ●●●●●●',
+    'read_every:    60s                # only changed documents',
+    'mapping:       ANT/v7'
+  ];
+  document.getElementById('cfg').innerHTML =
+    CFG.map(l => `<span class="l">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;') || ' '}</span>`).join('');
+
+  /* --- right rail: mapping ------------------------------------------------- */
+  document.getElementById('mapkv').innerHTML = kv([
+    ['Profile version', `<span class="id">${DETAIL.profileVer}</span>`],
+    ['Published', DETAIL.published],
+    ['Standard', 'PINT-OM v1.0.2']
+  ]);
+
+  /* --- right rail: health -------------------------------------------------- */
+  document.getElementById('health').innerHTML = kv([
+    ['Connector uptime', `<span style="color:var(--ok)">99.98%</span>`],
+    ['Failures 24 h', `<span style="color:var(--fail)">${T.failed}</span> of ${T.today}`],
+    ['Retry queue', '0'],
+    ['Certificate expires', DETAIL.certExpiry]
+  ]);
+</script>
+</body>
+</html>

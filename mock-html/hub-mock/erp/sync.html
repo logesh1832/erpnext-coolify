@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Invoice Status — Al Nahda ERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/app.css">
+</head>
+<body class="surface-erp" data-surface="erp" data-nav="sync"
+      data-step="erp-sync"
+      data-crumbs="E-Invoicing / ANT-SINV-2026-04471"
+      data-hint="The same invoice from step 1, now carrying its acknowledgement, reference number and QR — written back automatically.">
+
+<main class="main">
+  <div class="page">
+
+    <div class="page-head">
+      <div class="grow">
+        <div class="page-title">
+          <h1>Sales Invoice ANT-SINV-2026-04471</h1>
+          <span class="pill pill-ok"><i class="dot"></i>Acknowledged</span>
+          <span class="tag">Al Nahda Trading LLC</span>
+        </div>
+        <p class="page-sub">The same ERP record from step 1, now carrying its e-invoicing outcome.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-sm">Print with QR</button>
+        <a class="btn btn-sm btn-primary" href="../hub/document.html">View in Hub</a>
+      </div>
+    </div>
+
+    <div class="mb16" id="banner"></div>
+
+    <section>
+      <div class="card">
+        <div class="card-head">
+          <h2 class="grow">Journey of this invoice</h2>
+          <span class="tag">7 of 7 complete</span>
+          <span class="small dim">End to end 2 min 41 s</span>
+        </div>
+        <div class="card-body" id="journey"></div>
+        <div class="card-foot">
+          <span class="small dim">Steps 2 to 7 were performed by the Nazm Hub with no user action in the ERP.</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="split-wide">
+
+        <!-- ============================ MAIN COLUMN ============================ -->
+        <div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">E-Invoicing fields written back by the Hub</h2>
+              <span class="pill pill-accent">
+                <svg style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                Read-only</span>
+            </div>
+            <div class="card-body" id="summary"></div>
+            <div class="table-wrap" style="border-top:1px solid var(--line)">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                    <th class="nowrap">Written at</th>
+                  </tr>
+                </thead>
+                <tbody id="wb"></tbody>
+              </table>
+            </div>
+            <div class="card-foot">
+              <span class="small dim">+ 4 more fields. All are custom fields on this same Sales Invoice — no parallel system.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================= RIGHT RAIL ============================ -->
+        <div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2 class="grow">QR code</h2>
+              <span class="tag">Appendix D</span>
+            </div>
+            <div class="card-body">
+              <div style="display:flex;justify-content:center">
+                <div id="qr" style="background:#fff;padding:14px;border:1px solid var(--line);border-radius:var(--r-md)"></div>
+              </div>
+              <div class="small muted mt12">
+                Printed on the customer copy. The buyer can scan it to verify the invoice against the Tax Authority service.
+              </div>
+              <div class="divider"></div>
+              <div id="compliance"></div>
+            </div>
+            <div class="card-foot">
+              <button class="btn btn-sm btn-block">Preview print format</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <div class="card-body">
+          <div class="row wrap" style="gap:16px">
+            <div class="grow" style="min-width:280px">
+              <h2>One invoice, one obligation discharged.</h2>
+              <p class="page-sub">It started as a Sales Invoice in the company's own ERP, and it ends there — acknowledged, archived and printable with its QR.</p>
+            </div>
+            <div class="row-tight" style="flex:none;gap:8px">
+              <a class="btn" href="invoices.html">↺ Restart the story</a>
+              <a class="btn btn-primary" href="../index.html">Screen map</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+  const INV = ERP_INVOICES[0];
+
+  /* the five fields that matter to a stakeholder */
+  const WRITEBACK = [
+    { label: 'E-Invoice status',    f: 'custom_einvoice_status',  v: pill('acknowledged', 'Acknowledged'),                               t: '09:16:43.114' },
+    { label: 'Acknowledgement no.', f: 'custom_ack_number',       v: '<span class="mono">ASP-OM-2026-0731-44718</span>',                 t: '09:16:43.114' },
+    { label: 'Peppol reference',    f: 'custom_peppol_reference', v: '<span class="mono">PEP-8842-2026</span>',                          t: '09:16:43.114' },
+    { label: 'Document UUID',       f: 'custom_einvoice_uuid',    v: '<span class="mono">b7f4c2e1-9a3d-5c8b-a1f6-2e7d4b9c0a35</span>',   t: '09:16:43.114' },
+    { label: 'Signed XML',          f: 'custom_signed_xml',       v: '<span class="mono">ANT-SINV-2026-04471-signed.xml</span> <span class="dim tiny">8.9 KB</span>', t: '09:16:43.402' }
+  ];
+
+  /* ---- success banner ----------------------------------------------------- */
+  document.getElementById('banner').innerHTML = notice('ok',
+    `<b style="font-size:13px">Invoice acknowledged and reported to the Oman Tax Authority.</b>
+     <div class="mt4 muted">Acknowledgement
+       <span class="mono" style="color:var(--text-hi);font-weight:600">ASP-OM-2026-0731-44718</span>
+       received at <span class="num">09:16:41 GST</span> — 2 min 39 s after the invoice was submitted.</div>`);
+
+  /* ---- journey pipeline --------------------------------------------------- */
+  document.getElementById('journey').innerHTML = pipeline(6, {
+    stages: ['Submitted in ERP', 'Picked up by Hub', 'Mapped & validated', 'Sent to ASP', 'Acknowledged', 'Written back', 'QR generated'],
+    times:  ['09:14:02', '09:14:04', '09:14:06', '09:14:07', '09:16:41', '09:16:43', '09:16:43']
+  });
+
+  /* ---- compact three-line invoice summary --------------------------------- */
+  document.getElementById('summary').innerHTML = kv([
+    ['Customer',    'Oman Oil Marketing Co. SAOG'],
+    ['Grand total', `<span class="num" style="font-size:15px;font-weight:700">${omr(INV.total)}</span> <span class="dim tiny">OMR</span>`],
+    ['PO number',   '<span class="mono">PO-88213</span>']
+  ]);
+
+  /* ---- write-back fields -------------------------------------------------- */
+  document.getElementById('wb').innerHTML = WRITEBACK.map(w => `
+    <tr>
+      <td class="nowrap" style="font-weight:600">${w.label}
+        <div class="id tiny" style="color:var(--accent);font-weight:400">${w.f}</div></td>
+      <td style="word-break:break-all">${w.v}</td>
+      <td class="nowrap num dim tiny">31 Jul ${w.t}</td>
+    </tr>`).join('');
+
+  /* ---- three compliance facts, folded into the QR card -------------------- */
+  document.getElementById('compliance').innerHTML = kv([
+    ['Delivery state',    pill('delivered', ASP.mls)],
+    ['Reported to OTA',   '<span class="num">31 Jul 2026 09:16 GST</span>'],
+    ['Archived',          '10 years · Muscat DC']
+  ]);
+
+  /* ---- QR code — deterministic pseudo-pattern, 21×21 (version 1) ---------- */
+  (function () {
+    const N = 21, PX = 8;
+    const finder = (x, y) => {
+      let lx = null, ly = null;
+      if (x <= 7 && y <= 7)        { if (x === 7 || y === 7) return false; lx = x;      ly = y; }
+      else if (x >= 13 && y <= 7)  { if (x === 13 || y === 7) return false; lx = x - 14; ly = y; }
+      else if (x <= 7 && y >= 13)  { if (x === 7 || y === 13) return false; lx = x;      ly = y - 14; }
+      else return null;
+      const ring = (lx === 0 || lx === 6 || ly === 0 || ly === 6);
+      const core = (lx >= 2 && lx <= 4 && ly >= 2 && ly <= 4);
+      return ring || core;
+    };
+    let cells = '';
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const f = finder(x, y);
+        let on;
+        if (f !== null) on = f;
+        else if (y === 6) on = (x % 2 === 0);            /* timing row */
+        else if (x === 6) on = (y % 2 === 0);            /* timing column */
+        else {
+          const h = (x * 37 + y * 61 + ((x * y) % 17) * 13 + (((x + 5) ^ (y + 3)) * 7)) % 100;
+          on = h < 48;
+        }
+        cells += `<i style="display:block;width:${PX}px;height:${PX}px;background:${on ? '#111820' : '#fff'}"></i>`;
+      }
+    }
+    document.getElementById('qr').innerHTML =
+      `<div style="display:grid;grid-template-columns:repeat(${N},${PX}px);line-height:0">${cells}</div>`;
+  })();
+</script>
+</body>
+</html>
