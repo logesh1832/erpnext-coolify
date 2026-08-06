@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Nazm Hub — application shell + guided walkthrough
+   WJ Towell Compliance Hub — application shell + guided walkthrough
    Injects sidebar, topbar (with step navigation), hint strip and footer.
    Configured by data-* attributes on <body>:
      data-surface  hub | erp | portal
@@ -11,75 +11,128 @@
    All page files live one folder deep, so cross-surface links use ../
    ========================================================================== */
 
-/* THE canonical screen order. Everything else derives from this list. */
+/* THE canonical screen order. Everything else derives from this list.
+   Six acts of three. Reorder here and the whole walkthrough reorders. */
+const ACTS = [
+  { n: 'I',   t: 'It starts in their system',          d: 'Nothing about how they work changes' },
+  { n: 'II',  t: 'The group, and the companies in it',  d: 'Eighty-nine legal entities, one console' },
+  { n: 'III', t: 'Bringing a company on',               d: 'Configuration, not a new installation' },
+  { n: 'IV',  t: 'One invoice, end to end',             d: 'Built, checked, archived, transmitted' },
+  { n: 'V',   t: 'The other direction, and the record', d: 'Supplier invoices, history and reports' },
+  { n: 'VI',  t: 'What each company sees',              d: 'Its own login, its own data, its own invoice' }
+];
+
 const WALKTHROUGH = [
-  { id: 'erp-invoices',   href: '../erp/invoices.html',      name: 'Invoice raised in the ERP' },
-  { id: 'hub-login',      href: '../hub/login.html',         name: 'Signing in to the Hub' },
-  { id: 'hub-dashboard',  href: '../hub/dashboard.html',     name: 'Group dashboard' },
-  { id: 'hub-tenants',    href: '../hub/tenants.html',       name: 'The companies onboarded' },
-  { id: 'hub-tenant',     href: '../hub/tenant-detail.html', name: 'One company in detail' },
-  { id: 'hub-mapping',    href: '../hub/mapping.html',       name: 'Mapping ERP fields' },
-  { id: 'hub-queue',      href: '../hub/queue.html',         name: 'Invoices being processed' },
-  { id: 'hub-document',   href: '../hub/document.html',      name: 'XML built and checked' },
-  { id: 'hub-asp',        href: '../hub/asp.html',           name: 'Sent to the ASP' },
-  { id: 'hub-history',    href: '../hub/history.html',       name: 'The full record' },
-  { id: 'portal-login',   href: '../portal/login.html',      name: 'A company signs in' },
-  { id: 'portal-home',    href: '../portal/dashboard.html',  name: 'What that company sees' },
-  { id: 'erp-sync',       href: '../erp/sync.html',          name: 'Result back in the ERP' }
+  /* Act I */
+  { id: 'erp-invoices',  act: 0, sfc: 'erp',    href: '../erp/invoices.html',
+    name: 'An invoice raised in the ERP',   blurb: 'A normal sales invoice, created and submitted as usual.' },
+  { id: 'hub-boundary',  act: 0, sfc: 'hub',    href: '../hub/boundary.html',
+    name: 'Where their work ends and ours begins', blurb: 'One complete payload at the agreed interface. Everything after that is ours.' },
+  { id: 'hub-login',     act: 0, sfc: 'hub',    href: '../hub/login.html',
+    name: 'Signing in to the Hub',          blurb: 'The group platform team logs in.' },
+
+  /* Act II */
+  { id: 'hub-dashboard', act: 1, sfc: 'hub',    href: '../hub/dashboard.html',
+    name: 'The whole group on one screen',  blurb: 'Volumes, failures, and the companies that have gone quiet.' },
+  { id: 'hub-tenants',   act: 1, sfc: 'hub',    href: '../hub/tenants.html',
+    name: 'Every company in the group',     blurb: 'How each one connects, which wave it belongs to.' },
+  { id: 'hub-tenant',    act: 1, sfc: 'hub',    href: '../hub/tenant-detail.html',
+    name: 'One company in detail',          blurb: 'Its ERP, its connection, what it supplied and what we run.' },
+
+  /* Act III */
+  { id: 'hub-onboard',   act: 2, sfc: 'hub',    href: '../hub/onboard.html',
+    name: 'Connecting a new company',       blurb: 'Choose how to connect, enter the details, test it live.' },
+  { id: 'hub-mapping',   act: 2, sfc: 'hub',    href: '../hub/mapping.html',
+    name: 'Pointing their fields at the standard ones', blurb: 'Typed and chosen by an analyst. No code is written.' },
+  { id: 'hub-users',     act: 2, sfc: 'hub',    href: '../hub/users.html',
+    name: 'Giving the company its own login', blurb: 'How each of the 89 gets access, and who administers it.' },
+
+  /* Act IV */
+  { id: 'hub-queue',     act: 3, sfc: 'hub',    href: '../hub/queue.html',
+    name: 'Where every document is right now', blurb: 'The eight stages, and what is sitting in each.' },
+  { id: 'hub-document',  act: 3, sfc: 'hub',    href: '../hub/document.html',
+    name: 'Built, then checked',            blurb: 'The official XML, proven correct before anything is sent.' },
+  { id: 'hub-asp',       act: 3, sfc: 'hub',    href: '../hub/asp.html',
+    name: 'Sent, reported, delivered',      blurb: 'Three acknowledgements, on three separate legs.' },
+
+  /* Act V */
+  { id: 'hub-inbound',   act: 4, sfc: 'hub',    href: '../hub/inbound.html',
+    name: 'Supplier invoices arriving',     blurb: 'Routed, archived, and landed as a draft nobody posted for you.' },
+  { id: 'hub-history',   act: 4, sfc: 'hub',    href: '../hub/history.html',
+    name: 'Everything, searchable',         blurb: 'Both directions, and what the archive holds for each document.' },
+  { id: 'hub-reports',   act: 4, sfc: 'hub',    href: '../hub/reports.html',
+    name: 'Reports',                        blurb: 'VAT summaries, reporting completeness, exception ageing.' },
+
+  /* Act VI */
+  { id: 'portal-login',  act: 5, sfc: 'portal', href: '../portal/login.html',
+    name: 'A company signs in',             blurb: 'Its own credentials, issued to its own administrator.' },
+  { id: 'portal-home',   act: 5, sfc: 'portal', href: '../portal/dashboard.html',
+    name: 'What that company sees',         blurb: 'Only its own data. The other 88 are invisible.' },
+  { id: 'erp-sync',      act: 5, sfc: 'erp',    href: '../erp/sync.html',
+    name: 'The answer, back on the invoice', blurb: 'Reference, status and QR on the original ERP record.' }
 ];
 
 const NAV = {
   hub: [
     { label: 'Operations', items: [
-      { key: 'dashboard', name: 'Group Dashboard',   href: 'dashboard.html', ico: 'grid' },
-      { key: 'queue',     name: 'Processing Queue',  href: 'queue.html',     ico: 'queue' },
-      { key: 'history',   name: 'Processing History',href: 'history.html',   ico: 'history' },
-      { key: 'asp',       name: 'ASP Exchange',      href: 'asp.html',       ico: 'send' }
+      { key: 'dashboard', name: 'Group Dashboard',    href: 'dashboard.html', ico: 'grid' },
+      { key: 'queue',     name: 'Processing Queue',   href: 'queue.html',     ico: 'queue' },
+      { key: 'inbound',   name: 'Inbound Documents',  href: 'inbound.html',   ico: 'inbox' },
+      { key: 'asp',       name: 'ASP Exchange',       href: 'asp.html',       ico: 'send' }
+    ]},
+    { label: 'Records', items: [
+      { key: 'history',   name: 'Processing History', href: 'history.html',   ico: 'history' },
+      { key: 'reports',   name: 'Reports',            href: 'reports.html',   ico: 'chart' }
     ]},
     { label: 'Configuration', items: [
-      { key: 'tenants',   name: 'Companies',         href: 'tenants.html',   ico: 'tenants', tag: '89' },
-      { key: 'mapping',   name: 'Mapping Studio',    href: 'mapping.html',   ico: 'map' },
-      { key: 'document',  name: 'Document Inspector',href: 'document.html',  ico: 'doc' }
+      { key: 'tenants',   name: 'Companies',          href: 'tenants.html',   ico: 'tenants', tag: '89' },
+      { key: 'onboard',   name: 'Onboard a Company',  href: 'onboard.html',   ico: 'plus' },
+      { key: 'mapping',   name: 'Mapping Studio',     href: 'mapping.html',   ico: 'map' },
+      { key: 'users',     name: 'Users & Access',     href: 'users.html',     ico: 'users' },
+      { key: 'document',  name: 'Document Inspector', href: 'document.html',  ico: 'doc' }
     ]}
   ],
   erp: [
     { label: 'Accounts Receivable', items: [
-      { key: 'invoices',  name: 'Sales Invoices',    href: 'invoices.html', ico: 'file' },
-      { key: 'customers', name: 'Customers',         href: '#',             ico: 'users' },
-      { key: 'payments',  name: 'Payment Entry',     href: '#',             ico: 'chart' }
+      { key: 'invoices',  name: 'Sales Invoices',     href: 'invoices.html', ico: 'file' },
+      { key: 'customers', name: 'Customers',          href: '#',             ico: 'users' },
+      { key: 'payments',  name: 'Payment Entry',      href: '#',             ico: 'chart' }
     ]},
     { label: 'E-Invoicing', items: [
-      { key: 'sync',      name: 'E-Invoice Status',  href: 'sync.html',     ico: 'sync' },
-      { key: 'settings',  name: 'Settings',          href: '#',             ico: 'plug' }
+      { key: 'sync',      name: 'E-Invoice Status',   href: 'sync.html',     ico: 'sync' },
+      { key: 'settings',  name: 'Settings',           href: '#',             ico: 'plug' }
     ]}
   ],
   portal: [
     { label: 'My organisation', items: [
-      { key: 'dashboard', name: 'Overview',          href: 'dashboard.html', ico: 'grid' },
-      { key: 'invoices',  name: 'My Invoices',       href: 'dashboard.html#invoices', ico: 'file' },
-      { key: 'acks',      name: 'Acknowledgements',  href: 'dashboard.html#acks', ico: 'check' },
-      { key: 'failures',  name: 'Needs my attention',href: 'dashboard.html#failures', ico: 'alert', tag: '2' }
+      { key: 'dashboard', name: 'Overview',           href: 'dashboard.html', ico: 'grid' },
+      { key: 'invoices',  name: 'My Invoices',        href: 'dashboard.html#invoices', ico: 'file' },
+      { key: 'supplier',  name: 'Supplier Invoices',  href: 'dashboard.html#supplier', ico: 'inbox' },
+      { key: 'failures',  name: 'Needs my attention', href: 'dashboard.html#failures', ico: 'alert', tag: '3' }
+    ]},
+    { label: 'My company', items: [
+      { key: 'myreports', name: 'My Reports',         href: 'dashboard.html#reports', ico: 'chart' },
+      { key: 'myusers',   name: 'My Users',           href: 'dashboard.html#users',   ico: 'users' }
     ]}
   ]
 };
 
 const BRAND = {
-  hub:    { mark: 'N', name: 'Nazm Hub',       sub: 'Integration Console', who: 'OM', whoName: 'Group IT',      whoRole: 'Platform administrator' },
-  erp:    { mark: 'A', name: 'Al Nahda ERP',   sub: 'SAP S/4HANA Cloud',   who: 'AB', whoName: 'A. Al-Balushi', whoRole: 'Accounts Receivable' },
-  portal: { mark: 'A', name: 'Al Nahda Trading', sub: 'Nazm Company Portal', who: 'NK', whoName: 'N. Al-Kindi', whoRole: 'Finance — one company' }
+  hub:    { mark: 'T', name: 'WJ Towell',        sub: 'Compliance Hub',       who: 'WT', whoName: 'Group IT',      whoRole: 'Platform administrator' },
+  erp:    { mark: 'T', name: 'Towell Auto Centre', sub: 'ERPNext v15',          who: 'AB', whoName: 'A. Al-Balushi', whoRole: 'Accounts Receivable' },
+  portal: { mark: 'T', name: 'Towell Auto Centre', sub: 'Entity Portal',         who: 'NK', whoName: 'N. Al-Kindi',   whoRole: 'Finance — one company' }
 };
 
-const ENV = { hub: 'Nazm Hub', erp: 'Their ERP', portal: 'One company' };
+const ENV = { hub: 'Compliance Hub', erp: 'Their ERP', portal: 'One company' };
 
 /* --- step navigation markup ----------------------------------------------- */
-function stepNav(i, compact) {
+function stepNav(i) {
   const prev = i > 0 ? WALKTHROUGH[i - 1] : null;
   const next = i < WALKTHROUGH.length - 1 ? WALKTHROUGH[i + 1] : null;
-  const fix = h => h.replace('../', compact ? '../' : '../');
   return `
-    <a class="stepbtn ${prev ? '' : 'is-off'}" href="${prev ? fix(prev.href) : '#'}">← Previous</a>
+    <a class="stepbtn ${prev ? '' : 'is-off'}" href="${prev ? prev.href : '#'}">← Previous</a>
     <span class="count">Step ${i + 1} of ${WALKTHROUGH.length}</span>
-    <a class="stepbtn next" href="${next ? fix(next.href) : '../index.html'}">
+    <a class="stepbtn next" href="${next ? next.href : '../index.html'}">
       ${next ? 'Next →' : 'Finish ✓'}</a>`;
 }
 
@@ -168,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hint.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            stroke-linecap="round" stroke-linejoin="round">${ICO.info}</svg>
+      <span class="tagline">On this screen</span>
       <div class="grow">${body.dataset.hint}</div>
       <button class="close" title="Hide this hint"
               onclick="this.parentNode.remove()">&times;</button>`;
@@ -191,11 +245,20 @@ document.addEventListener('DOMContentLoaded', () => {
     page.appendChild(foot);
   }
 
+  /* ---- expanders: one delegated listener serves every page ---- */
+  document.addEventListener('click', (e) => {
+    const h = e.target.closest && e.target.closest('.exp-h');
+    if (!h) return;
+    const row = h.closest('.exp');
+    const open = row.classList.toggle('is-open');
+    h.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
   const footer = document.createElement('div');
   footer.className = 'footer';
   footer.innerHTML = `
-    <span>Demonstration prototype — illustrative data only</span>
-    <span class="dot">·</span><span>PINT-OM v1.0.2</span>
+    <span>Demonstration prototype — company names are real, every figure is illustrative</span>
+    <span class="dot">·</span><span>Oman OTA e-invoicing · PINT-OM</span>
     <span class="right"><a href="../index.html">All screens</a></span>`;
 
   main.prepend(bar);

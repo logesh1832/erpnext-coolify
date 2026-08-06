@@ -3,16 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>E-Invoice Status — Al Nahda ERP</title>
+<title>E-Invoice Status — Towell Auto Centre ERP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
+<style>
+  /* page-local — closing panel for the final screen of the walkthrough */
+  .closing { background: var(--accent-soft); border-color: var(--accent-line); }
+  .closing-list { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 7px;
+                  font-size: 13px; line-height: 1.6; color: var(--text-mid); }
+  .closing-list li::marker { color: var(--accent); font-weight: 700; }
+  /* page-local — the eight journey steps, as a compact two-column reading list */
+  .jsteps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; }
+  .jstep { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 9px; align-items: start; }
+  .jstep .jn { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center;
+               font-size: 10.5px; font-weight: 700; color: var(--ok);
+               background: color-mix(in srgb, var(--ok) 14%, transparent); }
+  .jstep .jt { font-size: 12.5px; font-weight: 600; }
+  .jstep .jw { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-lo); }
+  .jstep .jb { font-size: 11.5px; color: var(--text-mid); line-height: 1.55; margin-top: 3px; }
+  @media (max-width: 900px) { .jsteps { grid-template-columns: minmax(0, 1fr); } }
+</style>
 </head>
 <body class="surface-erp" data-surface="erp" data-nav="sync"
       data-step="erp-sync"
-      data-crumbs="E-Invoicing / ANT-SINV-2026-04471"
-      data-hint="The same invoice from step 1, now carrying its acknowledgement, reference number and QR — written back automatically.">
+      data-crumbs="E-Invoicing / TAC-SINV-2026-04471"
+      data-hint="The last screen. The same invoice from step 1, now carrying its reference, its status and its QR information — written back automatically.">
 
 <main class="main">
   <div class="page">
@@ -20,35 +37,25 @@
     <div class="page-head">
       <div class="grow">
         <div class="page-title">
-          <h1>Sales Invoice ANT-SINV-2026-04471</h1>
+          <h1>Sales Invoice TAC-SINV-2026-04471</h1>
           <span class="pill pill-ok"><i class="dot"></i>Acknowledged</span>
-          <span class="tag">Al Nahda Trading LLC</span>
+          <span class="tag">Towell Auto Centre LLC</span>
         </div>
-        <p class="page-sub">The same ERP record from step 1, now carrying its e-invoicing outcome.</p>
+        <p class="page-sub">The same ERP record the walkthrough started with, now carrying its e-invoicing outcome.</p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-sm">Print with QR</button>
+        <button class="btn btn-sm" id="btnPrint">Print with QR</button>
         <a class="btn btn-sm btn-primary" href="../hub/document.html">View in Hub</a>
       </div>
     </div>
 
+    <div class="small dim mb8" id="actionNote"></div>
     <div class="mb16" id="banner"></div>
 
-    <section>
-      <div class="card">
-        <div class="card-head">
-          <h2 class="grow">Journey of this invoice</h2>
-          <span class="tag">7 of 7 complete</span>
-          <span class="small dim">End to end 2 min 41 s</span>
-        </div>
-        <div class="card-body" id="journey"></div>
-        <div class="card-foot">
-          <span class="small dim">Steps 2 to 7 were performed by the Nazm Hub with no user action in the ERP.</span>
-        </div>
-      </div>
-    </section>
-
-    <section>
+    <!-- The invoice record leads. A finance user opens this screen to see what
+         landed on the invoice — the reference, the status and the QR. How it got
+         there is the replay below. -->
+    <section style="margin-top:0">
       <div class="split-wide">
 
         <!-- ============================ MAIN COLUMN ============================ -->
@@ -75,7 +82,8 @@
               </table>
             </div>
             <div class="card-foot">
-              <span class="small dim">+ 4 more fields. All are custom fields on this same Sales Invoice — no parallel system.</span>
+              <span class="small dim">All of these are fields on this same Sales Invoice. There is no parallel
+                system and no second place to look.</span>
             </div>
           </div>
 
@@ -86,21 +94,23 @@
 
           <div class="card">
             <div class="card-head">
-              <h2 class="grow">QR code</h2>
-              <span class="tag">Appendix D</span>
+              <h2 class="grow">QR information</h2>
+              <span class="tag">On the customer copy</span>
             </div>
             <div class="card-body">
               <div style="display:flex;justify-content:center">
                 <div id="qr" style="background:#fff;padding:14px;border:1px solid var(--line);border-radius:var(--r-md)"></div>
               </div>
               <div class="small muted mt12">
-                Printed on the customer copy. The buyer can scan it to verify the invoice against the Tax Authority service.
+                Written back to the invoice and rendered by the ERP's own print format. The buyer can scan it
+                to verify the invoice.
               </div>
               <div class="divider"></div>
               <div id="compliance"></div>
+              <div class="small muted mt12" id="archiveNote"></div>
             </div>
             <div class="card-foot">
-              <button class="btn btn-sm btn-block">Preview print format</button>
+              <button class="btn btn-sm btn-block" id="btnPreview">Preview print format</button>
             </div>
           </div>
 
@@ -108,18 +118,39 @@
       </div>
     </section>
 
+    <!-- How it got here, below the record itself -->
     <section>
       <div class="card">
+        <div class="card-head">
+          <h2 class="grow">Journey of this invoice</h2>
+          <span class="tag" id="journeyTag"></span>
+          <span class="small dim" id="journeyElapsed"></span>
+        </div>
+        <div class="card-body" id="journey"></div>
+        <div class="card-body" id="journeyDetail" style="border-top:1px solid var(--line)"></div>
+        <div class="card-foot">
+          <span class="small dim" id="journeyFoot"></span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card closing">
         <div class="card-body">
-          <div class="row wrap" style="gap:16px">
-            <div class="grow" style="min-width:280px">
-              <h2>One invoice, one obligation discharged.</h2>
-              <p class="page-sub">It started as a Sales Invoice in the company's own ERP, and it ends there — acknowledged, archived and printable with its QR.</p>
-            </div>
-            <div class="row-tight" style="flex:none;gap:8px">
-              <a class="btn" href="invoices.html">↺ Restart the story</a>
-              <a class="btn btn-primary" href="../index.html">Screen map</a>
-            </div>
+          <div class="eyebrow">The end of the walkthrough</div>
+          <h2 style="margin-top:6px">The loop is closed.</h2>
+          <ol class="closing-list">
+            <li>The invoice left this ERP on its own, as a normal Sales Invoice.</li>
+            <li>It was mapped, built as UBL 2.1, validated against the Oman rules and archived.</li>
+            <li>The Hub transmitted it to the group's accredited service provider, which reported it
+                to the Oman Tax Authority and delivered it to the buyer.</li>
+            <li>Its reference, its status and its QR information are now on the original record —
+                the same screen the finance team already uses.</li>
+          </ol>
+          <p class="small muted mt12">Nothing was exported by hand, and nobody had to leave the ERP.</p>
+          <div class="row-tight mt16" style="gap:8px">
+            <a class="btn" href="invoices.html">↺ Start again from the ERP</a>
+            <a class="btn btn-primary" href="../index.html">Screen map</a>
           </div>
         </div>
       </div>
@@ -132,52 +163,106 @@
 <script src="../assets/js/ui.js"></script>
 <script src="../assets/js/shell.js"></script>
 <script>
-  const INV = ERP_INVOICES[0];
+  /* Every figure, name, time and step on this screen comes from data.js.     */
+  const INV  = ERP_INVOICES[0];
+  const HERO = INVOICES.find(i => i.no === INV.no);
 
-  /* the five fields that matter to a stakeholder */
-  const WRITEBACK = [
-    { label: 'E-Invoice status',    f: 'custom_einvoice_status',  v: pill('acknowledged', 'Acknowledged'),                               t: '09:16:43.114' },
-    { label: 'Acknowledgement no.', f: 'custom_ack_number',       v: '<span class="mono">ASP-OM-2026-0731-44718</span>',                 t: '09:16:43.114' },
-    { label: 'Peppol reference',    f: 'custom_peppol_reference', v: '<span class="mono">PEP-8842-2026</span>',                          t: '09:16:43.114' },
-    { label: 'Document UUID',       f: 'custom_einvoice_uuid',    v: '<span class="mono">b7f4c2e1-9a3d-5c8b-a1f6-2e7d4b9c0a35</span>',   t: '09:16:43.114' },
-    { label: 'Signed XML',          f: 'custom_signed_xml',       v: '<span class="mono">ANT-SINV-2026-04471-signed.xml</span> <span class="dim tiny">8.9 KB</span>', t: '09:16:43.402' }
-  ];
+  /* ---- the eight journey steps, straight from SYNC_STEPS ------------------ */
+  const J = SYNC_STEPS;
+  const hhmmss = s => (String(s.t).split(' ').pop() || '');
+  const secs   = s => { const p = hhmmss(s).split(':').map(Number); return p[0] * 3600 + p[1] * 60 + p[2]; };
+  const elapsed = secs(J[J.length - 1]) - secs(J[0]);
+  const human = e => (e >= 60 ? Math.floor(e / 60) + ' min ' : '') + (e % 60) + ' s';
+  const doneCount = J.filter(s => s.st === 'ok').length;
 
-  /* ---- success banner ----------------------------------------------------- */
-  document.getElementById('banner').innerHTML = notice('ok',
-    `<b style="font-size:13px">Invoice acknowledged and reported to the Oman Tax Authority.</b>
-     <div class="mt4 muted">Acknowledgement
-       <span class="mono" style="color:var(--text-hi);font-weight:600">ASP-OM-2026-0731-44718</span>
-       received at <span class="num">09:16:41 GST</span> — 2 min 39 s after the invoice was submitted.</div>`);
+  document.getElementById('journeyTag').textContent = doneCount + ' of ' + J.length + ' complete';
+  document.getElementById('journeyElapsed').textContent = 'End to end ' + human(elapsed);
 
-  /* ---- journey pipeline --------------------------------------------------- */
-  document.getElementById('journey').innerHTML = pipeline(6, {
-    stages: ['Submitted in ERP', 'Picked up by Hub', 'Mapped & validated', 'Sent to ASP', 'Acknowledged', 'Written back', 'QR generated'],
-    times:  ['09:14:02', '09:14:04', '09:14:06', '09:14:07', '09:16:41', '09:16:43', '09:16:43']
+  document.getElementById('journey').innerHTML = pipeline(J.length, {
+    stages: ['Submitted', 'Collected', 'Validated', 'Archived', 'Transmitted', 'Outcomes', 'Written back', 'QR on the invoice'],
+    times:  J.map(hhmmss)
   });
 
-  /* ---- compact three-line invoice summary --------------------------------- */
+  document.getElementById('journeyDetail').innerHTML =
+    '<div class="jsteps">' + J.map((s, i) => `
+      <div class="jstep">
+        <span class="jn">${i + 1}</span>
+        <div>
+          <div class="row-tight" style="gap:8px"><span class="jt">${s.name}</span>
+            <span class="jw">${hhmmss(s)}</span></div>
+          <div class="jb">${s.body}</div>
+        </div>
+      </div>`).join('') + '</div>';
+
+  document.getElementById('journeyFoot').textContent =
+    'Step 1 happened in this ERP. Steps 2 to ' + J.length + ' were performed by the Compliance Hub and the '
+    + 'group’s service provider, with no user action here.';
+
+  /* ---- banner: who did what -----------------------------------------------
+     The Hub transmits to the ASP. The ASP — corner 2 — reports the Tax Data
+     Document to the OTA. The Hub never talks to the Tax Authority itself.   */
+  const ackLeg = LEGS.find(l => l.id === 'ack');
+  const otaLeg = LEGS.find(l => l.id === 'ota');
+  const delLeg = LEGS.find(l => l.id === 'deliv');
+  const clock  = at => at.replace('28 Jul 2026 ', '').split('.')[0];
+
+  document.getElementById('banner').innerHTML = notice('ok',
+    `<b style="font-size:13px">Transmitted to the service provider, reported to the Tax Authority, delivered to the buyer.</b>
+     <div class="mt4 muted">The Hub sent this invoice to the group's accredited service provider, which accepted it at
+       <span class="num">${clock(ackLeg.at)}</span> under acknowledgement
+       <span class="mono" style="color:var(--text-hi);font-weight:600">${ASP.ackNo}</span>.
+       The service provider — not the Hub — reported the Tax Data Document to the Oman Tax Authority, acknowledged at
+       <span class="num">${clock(otaLeg.at)}</span>. The buyer's provider confirmed delivery at
+       <span class="num">${clock(delLeg.at)}</span>, and the answer was written back here at
+       <span class="num">${hhmmss(J[J.length - 1])}</span> — ${human(elapsed)} after submission.</div>`);
+
+  /* ---- compact invoice summary — counterparty read from the data ---------- */
   document.getElementById('summary').innerHTML = kv([
-    ['Customer',    'Oman Oil Marketing Co. SAOG'],
+    ['Customer',    INV.cust],
+    ['Invoice date', `<span class="num">${INV.date}</span>`],
     ['Grand total', `<span class="num" style="font-size:15px;font-weight:700">${omr(INV.total)}</span> <span class="dim tiny">OMR</span>`],
-    ['PO number',   '<span class="mono">PO-88213</span>']
+    ['PO number',   `<span class="mono">${(HERO && HERO.po) || '—'}</span>`]
   ]);
 
-  /* ---- write-back fields -------------------------------------------------- */
+  /* ---- the fields written back onto this record --------------------------- */
+  const WB_AT = hhmmss(J[J.length - 2]);   /* 09:16:43 — the writeback step */
+  const WRITEBACK = [
+    { label: 'E-Invoice status',    f: 'custom_einvoice_status',  v: pill('acknowledged', 'Acknowledged') },
+    { label: 'Acknowledgement no.', f: 'custom_ack_number',       v: `<span class="mono">${ASP.ackNo}</span>` },
+    { label: 'Peppol reference',    f: 'custom_peppol_reference', v: `<span class="mono">${ASP.ref}</span>` },
+    { label: 'Document UUID',       f: 'custom_einvoice_uuid',    v: `<span class="mono">${HERO.uuid}</span>` },
+    { label: 'QR information',      f: 'custom_einvoice_qr',      v: '<span class="mono">Present</span> <span class="dim tiny">rendered on the customer copy</span>' }
+  ];
+
   document.getElementById('wb').innerHTML = WRITEBACK.map(w => `
     <tr>
       <td class="nowrap" style="font-weight:600">${w.label}
         <div class="id tiny" style="color:var(--accent);font-weight:400">${w.f}</div></td>
       <td style="word-break:break-all">${w.v}</td>
-      <td class="nowrap num dim tiny">31 Jul ${w.t}</td>
+      <td class="nowrap num dim tiny">${DEMO_DATE.replace(' 2026', '')} ${WB_AT}</td>
     </tr>`).join('');
 
-  /* ---- three compliance facts, folded into the QR card -------------------- */
+  /* ---- compliance facts, folded into the QR card -------------------------- */
   document.getElementById('compliance').innerHTML = kv([
-    ['Delivery state',    pill('delivered', ASP.mls)],
-    ['Reported to OTA',   '<span class="num">31 Jul 2026 09:16 GST</span>'],
-    ['Archived',          '10 years · Muscat DC']
+    ['Delivery state',       pill('delivered', 'Delivered to the buyer')],
+    ['Reported to the OTA',  `<span class="num">${clock(otaLeg.at)}</span> <span class="dim tiny">by the service provider</span>`],
+    ['Archived',             pill('ok', 'Before transmission')]
   ]);
+
+  document.getElementById('archiveNote').textContent =
+    'The document and its processing evidence are held in the compliance archive. The retention period and '
+    + 'the archive location are agreed during solution design.';
+
+  /* ---- buttons that would leave the prototype ----------------------------- */
+  const noteEl = document.getElementById('actionNote');
+  function confirmInline(id, msg) {
+    const b = document.getElementById(id);
+    if (b) b.addEventListener('click', () => { noteEl.textContent = msg; });
+  }
+  confirmInline('btnPreview',
+    'Print preview is outside this prototype. In the live system the ERP renders its own print format, with the QR on it.');
+  confirmInline('btnPrint',
+    'Printing is outside this prototype. The QR information is already on this record and on the customer copy.');
 
   /* ---- QR code — deterministic pseudo-pattern, 21×21 (version 1) ---------- */
   (function () {

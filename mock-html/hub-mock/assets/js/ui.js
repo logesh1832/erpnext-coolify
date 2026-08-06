@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Nazm Hub — shared UI component helpers
+   WJ Towell Compliance Hub — shared UI component helpers
    Every function returns an HTML string. Pages compose them.
    ========================================================================== */
 
@@ -31,7 +31,11 @@ const ICO = {
   filter:  '<path d="M3 4h18l-7 8v7l-4 2v-9z"/>',
   refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/>',
   play:    '<path d="M6 4l14 8-14 8z"/>',
-  users:   '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>'
+  users:   '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>',
+  inbox:   '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.1z"/>',
+  plus:    '<path d="M12 5v14M5 12h14"/>',
+  mail:    '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/>',
+  key:     '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 8.3-8.3 3 3-2 2-2-2M17 8l2 2"/>'
 };
 
 function icon(name, cls) {
@@ -50,8 +54,9 @@ const PILL_MAP = {
   queued:      ['idle', 'Queued'],       draft:       ['idle', 'Draft'],
   failed:      ['fail', 'Failed'],       rejected:    ['fail', 'Rejected'],
   error:       ['fail', 'Error'],
-  reprocessed: ['info', 'Reprocessed'],  satellite:   ['info', 'Satellite'],
-  submitted:   ['info', 'Submitted']
+  reprocessed: ['info', 'Reprocessed'],  submitted:   ['info', 'Submitted'],
+  'self-hosted': ['warn', 'Self-hosted'], invited:    ['idle', 'Invited'],
+  held:        ['fail', 'Held'],         silent:      ['fail', 'No documents']
 };
 function pill(key, label) {
   const m = PILL_MAP[String(key).toLowerCase()] || ['idle', key];
@@ -233,4 +238,133 @@ function kv(pairs, flat) {
 /* --- simple bar ----------------------------------------------------------- */
 function bar(pctVal, tone) {
   return `<div class="bar"><i style="--w:${pctVal}%;${tone ? `--tone:${tone}` : ''}"></i></div>`;
+}
+
+/* --- connection-method chip (proposal §4) --------------------------------- */
+function methodChip(m, full) {
+  if (m === 'self') return `<span class="method self">Self-hosted</span>`;
+  const info = METHODS[m];
+  return `<span class="method ${m === 2 ? 'm2' : m === 3 ? 'm3' : ''}">${full ? info.n : 'Method ' + m}</span>`;
+}
+
+/* --- editable combobox -----------------------------------------------------
+   Renders an input plus a filtered option list. Typing filters; clicking or
+   pressing Enter commits. onPick(value) fires on commit.
+   opts: [{v, n, d}]                                                          */
+function combo(id, value, opts, placeholder) {
+  return `<div class="combo" id="${id}" data-value="${value || ''}">
+    <input class="input" type="text" autocomplete="off" spellcheck="false"
+           value="${value || ''}" placeholder="${placeholder || 'Search…'}">
+    <div class="combo-list"></div>
+  </div>`;
+}
+
+/* Wires a .combo rendered above. options: [{v,n,d}]; onPick(v) called on commit. */
+function comboBind(id, options, onPick) {
+  const root = document.getElementById(id);
+  if (!root) return;
+  const input = root.querySelector('.input');
+  const list  = root.querySelector('.combo-list');
+  let cursor = 0, filtered = options;
+
+  const hi = (text, q) => {
+    if (!q) return text;
+    const i = text.toLowerCase().indexOf(q.toLowerCase());
+    return i < 0 ? text
+      : text.slice(0, i) + '<mark>' + text.slice(i, i + q.length) + '</mark>' + text.slice(i + q.length);
+  };
+
+  function draw(q) {
+    filtered = options.filter(o =>
+      (o.v + ' ' + (o.n || '') + ' ' + (o.d || '')).toLowerCase().includes((q || '').toLowerCase()));
+    if (!filtered.length) { list.innerHTML = `<div class="combo-empty">No field matches “${q}”</div>`; return; }
+    if (cursor >= filtered.length) cursor = 0;
+    list.innerHTML = filtered.map((o, i) => `
+      <div class="combo-opt ${i === cursor ? 'is-cursor' : ''}" data-v="${o.v}">
+        <div class="o1">${hi(o.n || o.v, q)}</div>
+        ${o.d ? `<div class="o2">${o.d}</div>` : ''}
+      </div>`).join('');
+  }
+
+  function open()  { root.classList.add('is-open'); draw(input.value === root.dataset.value ? '' : input.value); }
+  function close() { root.classList.remove('is-open'); }
+  function commit(v) {
+    root.dataset.value = v;
+    input.value = v;
+    close();
+    if (onPick) onPick(v);
+  }
+
+  input.addEventListener('focus', open);
+  input.addEventListener('input', () => { cursor = 0; root.classList.add('is-open'); draw(input.value); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { cursor = Math.min(cursor + 1, filtered.length - 1); draw(input.value); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { cursor = Math.max(cursor - 1, 0); draw(input.value); e.preventDefault(); }
+    else if (e.key === 'Enter') { if (filtered[cursor]) commit(filtered[cursor].v); e.preventDefault(); }
+    else if (e.key === 'Escape') { input.value = root.dataset.value; close(); }
+  });
+  list.addEventListener('mousedown', e => {
+    const o = e.target.closest('.combo-opt');
+    if (o) { e.preventDefault(); commit(o.dataset.v); }
+  });
+  input.addEventListener('blur', () => setTimeout(() => {
+    if (!root.classList.contains('is-open')) return;
+    input.value = root.dataset.value; close();
+  }, 120));
+}
+
+/* --- wizard stepper ------------------------------------------------------- */
+function wsteps(names, at) {
+  return `<div class="wsteps">` + names.map((n, i) => `
+    <div class="wstep ${i < at ? 'done' : i === at ? 'now' : ''}">
+      <span class="wn">${i < at ? '✓' : i + 1}</span>
+      <span class="wt">${n}</span>
+      <span class="wsep"></span>
+    </div>`).join('') + `</div>`;
+}
+
+/* --- five-corner board (proposal §2) -------------------------------------- */
+function cornerBoard() {
+  return `<div class="corners">` + CORNERS.map(c => `
+    <div class="corner ${c.us ? 'is-us' : ''} ${c.n === 5 ? 'is-ota' : ''}">
+      <span class="cn">${c.n}</span>
+      <div class="ct">${c.name}</div>
+      <div class="cs">${c.sub}</div>
+      <div class="cd">${c.note}</div>
+    </div>`).join('') + `</div>`;
+}
+
+/* --- acknowledgement leg -------------------------------------------------- */
+function legRow(l) {
+  const done = l.st === 'ok';
+  return `<div class="leg ${done ? 'ok' : 'pending'}">
+    <span class="lmark">${done ? '✓' : '·'}</span>
+    <div>
+      ${l.leg ? `<div class="lroute">${l.leg}</div>` : ''}
+      <div class="lname">${l.name}</div>
+      <div class="lbody">${l.body}</div>
+      ${l.ref ? `<div class="lref">${l.ref}</div>` : ''}
+    </div>
+    <div class="lwhen">
+      <div class="w1">${done ? l.at.replace('28 Jul 2026 ', '') : 'awaiting'}</div>
+      ${l.el ? `<div class="w2">${l.el}</div>` : `<div class="w2">${done ? '' : 'no action needed'}</div>`}
+    </div>
+  </div>`;
+}
+
+/* --- switch --------------------------------------------------------------- */
+function switchEl(id, label, on) {
+  return `<label class="switch"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}>
+    <span class="track"></span><span class="sw-lbl">${label}</span></label>`;
+}
+
+/* An expander row: `head` is always visible, `body` opens underneath it.
+   Pass open=true for the first row on a screen — see the note in app.css. */
+function expRow(head, body, open) {
+  return `<div class="exp${open ? ' is-open' : ''}">
+    <button class="exp-h" type="button" aria-expanded="${open ? 'true' : 'false'}">
+      ${head}<span class="exp-i" aria-hidden="true">i</span>
+    </button>
+    <div class="exp-b"><div class="exp-inner"><div class="exp-text">${body}</div></div></div>
+  </div>`;
 }

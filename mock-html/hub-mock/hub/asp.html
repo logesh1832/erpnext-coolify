@@ -3,16 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ASP Exchange — Nazm Hub</title>
+<title>ASP Exchange — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
+<style>
+  /* page-local — ASP exchange only */
+  .where { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0; }
+  .wcell { padding: 13px 16px; }
+  .wcell + .wcell { border-left: 1px solid var(--line); }
+  @media (max-width: 900px) {
+    .where { grid-template-columns: 1fr; }
+    .wcell + .wcell { border-left: 0; border-top: 1px solid var(--line); }
+  }
+  .wcell .wk { font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
+               text-transform: uppercase; color: var(--text-lo); }
+  .wcell .wv { font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .wcell .wb { font-size: 11.5px; color: var(--text-mid); margin-top: 5px; line-height: 1.55; }
+  .flowline { font-size: 12px; color: var(--text-mid); line-height: 1.7; max-width: 96ch; }
+  .mono-hl { font-family: var(--font-mono); font-size: 11.5px; }
+  /* the two document cards sit side by side; the acknowledged one is the wider */
+  .docpair { grid-template-columns: minmax(0,1.06fr) minmax(0,1fr); align-items: start; }
+  @media (max-width: 1100px) { .docpair { grid-template-columns: 1fr; } }
+  .card-body { padding: 15px 16px; }
+  .page-head { margin-bottom: 16px; }
+  .wcell { padding: 12px 16px; }
+  /* keyboard-operable disclosure for the technical detail */
+  details.disc > summary {
+    list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11.5px; font-weight: 600; color: var(--accent-hi);
+    border: 1px solid var(--line-hard); border-radius: 999px; padding: 5px 13px;
+  }
+  details.disc > summary::-webkit-details-marker { display: none; }
+  details.disc > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  details.disc[open] > summary { margin-bottom: 12px; }
+  .chev { display: inline-flex; transition: transform .15s var(--ease); }
+  .chev svg { width: 12px; height: 12px; display: block; }
+  details.disc[open] > summary .chev { transform: rotate(90deg); }
+</style>
 </head>
 <body class="surface-hub" data-surface="hub" data-nav="asp"
       data-step="hub-asp"
       data-crumbs="Operations / ASP Exchange"
-      data-hint="The document goes to the group's accredited service provider, which acknowledges it and reports it onward to the Tax Authority.">
+      data-hint="Three acknowledgements arrive on three separate legs, at three different times. This screen tracks each one on its own.">
 
 <main class="main">
   <div class="page">
@@ -21,99 +55,85 @@
       <div class="grow">
         <div class="page-title">
           <h1>ASP Exchange</h1>
-          <span class="pill pill-ok"><i class="dot"></i>Acknowledged</span>
+          <span class="pill pill-ok"><i class="dot"></i>Connected</span>
         </div>
-        <p class="page-sub">Oman reports invoices after issue — no authority clears them beforehand.</p>
+        <p class="page-sub" id="pageSub"></p>
       </div>
       <div class="page-actions">
-        <button class="btn btn-sm">Download receipt</button>
-        <a class="btn btn-sm btn-primary" href="document.html">View document</a>
+        <span class="small dim" id="provNote"></span>
       </div>
     </div>
-
-    <div class="mb16" id="banner"></div>
 
     <div class="card mb16">
+      <div class="card-head">
+        <h2 class="grow">The five-corner model</h2>
+        <span class="tag">Oman · Fawtara</span>
+      </div>
       <div class="card-body">
-        <div id="pipe"></div>
+        <div id="corners"></div>
+      </div>
+      <div class="where" style="border-top:1px solid var(--line)" id="whereWeSit"></div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <p class="flowline" id="flowLine"></p>
       </div>
     </div>
 
-    <div class="split-wide">
-      <div>
+    <div class="section-head mt16">
+      <span class="eyebrow">Three separate legs — not one round trip</span>
+    </div>
 
-        <section style="margin-top:0">
-          <div class="card">
-            <div class="card-head">
-              <h2 class="grow">What was sent and what came back</h2>
-              <span class="pill pill-info"><i class="dot"></i>mTLS</span>
-            </div>
-            <div class="card-body">
-              <div class="row wrap" style="gap:18px">
-                <div class="stack">
-                  <span class="tiny dim">HTTP status</span>
-                  <span class="row-tight" style="margin-top:3px">
-                    <span style="font-size:22px;font-weight:600;letter-spacing:-.02em" class="num">202</span>
-                    <span class="pill pill-ok"><i class="dot"></i>Accepted</span>
-                  </span>
-                </div>
-                <div class="vdivider"></div>
-                <div class="stack">
-                  <span class="tiny dim">Round trip</span>
-                  <span class="num" style="font-size:22px;font-weight:600;letter-spacing:-.02em">412 <span style="font-size:13px;color:var(--text-lo)">ms</span></span>
-                </div>
-              </div>
-              <div class="divider"></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 26px">
-                <div>
-                  <div class="tiny dim" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px">Sent</div>
-                  <div id="sentKv"></div>
-                </div>
-                <div>
-                  <div class="tiny dim" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px">Came back</div>
-                  <div id="backKv"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <div class="card">
-            <div class="card-head">
-              <h2 class="grow">What happened after that</h2>
-              <span id="mlsPill"></span>
-            </div>
-            <div class="card-body">
-              <p class="small muted mb16">The receipt confirms custody, not delivery. The delivery confirmation
-                arrives minutes later, once the buyer's access point has taken the document.</p>
-              <div id="mlsTimeline"></div>
-            </div>
-          </div>
-        </section>
-
+    <!-- one document with all three legs in, one still in flight, side by side -->
+    <div class="grid g2 mb16 docpair">
+      <div class="card">
+        <div class="card-head">
+          <h2 class="grow" id="legTitle"></h2>
+          <span class="pill pill-ok"><i class="dot"></i>All three received</span>
+        </div>
+        <div class="card-body">
+          <div id="legNote"></div>
+        </div>
+        <div style="border-top:1px solid var(--line)" id="legs"></div>
       </div>
 
-      <div>
-
-        <section style="margin-top:0">
-          <div class="card">
-            <div class="card-head">
-              <h2 class="grow">The service provider</h2>
-              <span class="beacon" style="--tone:var(--ok)"><i></i></span>
-            </div>
-            <div class="card-body">
-              <div id="connKv"></div>
-              <div class="divider"></div>
-              <div class="tiny dim" style="text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:9px">
-                What it does not do</div>
-              <div class="stack" style="gap:9px" id="notList"></div>
-            </div>
-          </div>
-        </section>
-
+      <div class="card">
+        <div class="card-head">
+          <h2 class="grow" id="pendTitle"></h2>
+          <span class="pill pill-warn"><i class="dot"></i>Two legs still awaited</span>
+        </div>
+        <div class="card-body">
+          <div id="pendNote"></div>
+        </div>
+        <div style="border-top:1px solid var(--line)" id="legsPending"></div>
+        <div class="card-foot">
+          <span class="tiny dim grow" id="pendFoot"></span>
+          <button class="btn btn-sm btn-ghost" id="btnCheck">Check for acknowledgements</button>
+          <span class="tiny dim" id="checkNote" style="display:none"></span>
+        </div>
       </div>
     </div>
+
+    <div id="model" class="mb12"></div>
+
+    <details class="disc">
+      <summary><span class="chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+        stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span>Show exchange details — connection
+        and this document on the wire</summary>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h2 class="grow">Connection</h2></div>
+          <div class="card-body" id="kvConn"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 class="grow">This document on the wire</h2></div>
+          <div class="card-body" id="kvDoc"></div>
+          <div class="card-foot">
+            <span class="tiny dim">202 Accepted means the provider has taken custody of the document for
+              processing. It is not an outcome. The outcome arrives later, on the legs above.</span>
+          </div>
+        </div>
+      </div>
+    </details>
 
   </div>
 </main>
@@ -122,77 +142,115 @@
 <script src="../assets/js/ui.js"></script>
 <script src="../assets/js/shell.js"></script>
 <script>
-  /* ---- page-local detail (not in data.js) -------------------------------- */
-  const EXCHANGE = {
-    payloadSize: '8.9 KB',
-    transmissionId: 'TRX-OM-2026-0731-118842',
-    docsToday: 1079
-  };
+  const doc   = INVOICES.find(i => i.no === 'TAC-SINV-2026-04471');
+  const pend  = INVOICES.find(i => i.no === 'ENH-SINV-2026-01180');
+  const dTen  = tenant(doc.tenant), pTen = tenant(pend.tenant);
+  const buyer = CUSTOMERS[doc.cust];
 
-  const PIPE_TIMES = [
-    '09:14:02', '09:14:04', '09:14:05', '09:14:06',
-    '09:14:06', '09:14:07', '09:16:41'
-  ];
+  document.getElementById('pageSub').innerHTML =
+    'Following one document — <span class="num">' + doc.no + '</span> from ' + dTen.short +
+    ' to ' + buyer.name + ' — from the moment it left the Hub.';
+  document.getElementById('provNote').textContent = ASP.provider;
 
-  const MLS_STEPS = [
-    { name: 'Submitted to the service provider', t: '31 Jul 2026 · 09:14:07', st: 'ok',
-      body: 'The signed document was handed over on a secured connection.' },
-    { name: 'Receipt issued', t: '31 Jul 2026 · 09:14:07', st: 'ok',
-      body: 'Acknowledgement ASP-OM-2026-0731-44718 — the provider has taken custody.' },
-    { name: 'Delivered to the buyer', t: '31 Jul 2026 · 09:16:41', st: 'ok',
-      body: 'The buyer\'s access point confirmed receipt. This is the business outcome.' },
-    { name: 'Reported to the Tax Authority', t: '31 Jul 2026 · 09:16:44', st: 'ok',
-      body: 'Reference OTA-RPT-2026-0731-99204. The reporting obligation is discharged.' }
-  ];
+  /* ---- the five corners ---- */
+  document.getElementById('corners').innerHTML = cornerBoard();
 
-  const NOT_DOES = [
-    'It does not approve the invoice — there is no pre-clearance.',
-    'It does not judge VAT treatment — the Hub settles that before sending.',
-    'It does not hold the record — the Hub keeps the document and the proof.'
-  ];
+  document.getElementById('whereWeSit').innerHTML = `
+    <div class="wcell">
+      <div class="wk">Corner 1</div>
+      <div class="wv">Where the group sits</div>
+      <div class="wb">The Hub sits behind corner 1 for every participating entity. Each of the
+        ${GROUP.entities} is its own participant, and the Hub issues on their behalf.</div>
+    </div>
+    <div class="wcell">
+      <div class="wk">Corner 2</div>
+      <div class="wv">The group's service provider</div>
+      <div class="wb">One accredited provider relationship covers all of the group's participant
+        identities. It validates, it transmits, and it reports.</div>
+    </div>
+    <div class="wcell">
+      <div class="wk">Corners 3 and 4</div>
+      <div class="wv">Where supplier invoices arrive</div>
+      <div class="wb">When a group company is the buyer it is corner 4, and its provider is corner 3.
+        That is the inbound direction shown on the previous screen.</div>
+    </div>`;
 
-  /* ---- render ------------------------------------------------------------ */
-  document.getElementById('banner').innerHTML = notice('ok',
-    '<b>Delivered and reported.</b> ANT-SINV-2026-04471 was acknowledged as ' +
-    '<span class="mono" style="color:var(--ok);font-weight:600">' + ASP.ackNo + '</span> ' +
-    'and confirmed delivered at ' + ASP.mlsAt + '.');
+  document.getElementById('flowLine').innerHTML =
+    `<strong>The flow.</strong> The supplier's service provider validates the document against the
+     PINT-OM rules and, if it passes, transmits the UBL 2.1 document over Peppol to the buyer's
+     service provider. Separately — on its own leg, not as part of that transmission — the same
+     provider reports the Tax Data Document to the OTA. Two destinations, two answers, arriving at
+     two different times.`;
 
-  document.getElementById('pipe').innerHTML = pipeline(6, { times: PIPE_TIMES });
+  /* ---- the three legs ---- */
+  document.getElementById('legTitle').innerHTML =
+    'Acknowledgements for <span class="num">' + doc.no + '</span>';
 
-  document.getElementById('sentKv').innerHTML = kv([
-    ['Document', '<span class="mono" style="font-size:11px">ANT-SINV-2026-04471</span>'],
-    ['To', '<span style="font-size:11.5px">Accredited service provider</span>'],
-    ['Format', 'UBL 2.1 · PINT-OM'],
-    ['Size', '<span class="num">' + EXCHANGE.payloadSize + '</span>'],
-    ['Sent at', '<span class="num" style="font-size:11.5px">' + ASP.sentAt + '</span>']
-  ], true);
+  document.getElementById('legNote').innerHTML = notice('info',
+    `<strong>These are three independent legs, not a chain.</strong>
+     The provider's acceptance, the OTA's confirmation that the report was received, and the buyer's
+     provider confirming delivery all travel back separately. They can arrive in any order, minutes
+     or hours apart, and one of them failing does not mean the others did. The Hub holds a state for
+     each leg on every document rather than one overall answer, which is why it never waits on a
+     single synchronous reply from the provider.`);
 
-  document.getElementById('backKv').innerHTML = kv([
-    ['Acknowledgement', '<span class="mono" style="font-size:11px;word-break:break-all;display:inline-block">' + ASP.ackNo + '</span>'],
-    ['Peppol reference', '<span class="mono" style="font-size:11px">' + ASP.ref + '</span>'],
-    ['Transmission', '<span class="mono" style="font-size:11px;word-break:break-all;display:inline-block">' + EXCHANGE.transmissionId + '</span>'],
-    ['Received at', '<span class="num" style="font-size:11.5px">' + ASP.ackAt + '</span>'],
-    ['Retries', '<span class="num">0</span>']
-  ], true);
+  document.getElementById('legs').innerHTML = LEGS.map(legRow).join('');
 
-  document.getElementById('mlsPill').innerHTML = pill('delivered', ASP.mls);
-  document.getElementById('mlsTimeline').innerHTML = timeline(MLS_STEPS);
+  /* ---- a second document, still in flight ---- */
+  document.getElementById('pendTitle').innerHTML =
+    'Still in flight — <span class="num">' + pend.no + '</span>';
 
-  document.getElementById('connKv').innerHTML = kv([
-    ['Provider', '<span style="font-size:11.5px">Accredited service provider · licence ASP-OM-014</span>'],
-    ['Connection', pill('connected')],
-    ['Documents today', '<span class="num">' + EXCHANGE.docsToday.toLocaleString() + '</span>'],
-    ['Government status', pill('ok', ASP.govStatus)],
-    ['Reporting reference', '<span class="mono" style="font-size:11px">OTA-RPT-2026-0731-99204</span>'],
-    ['Retention', '7 years — in country']
+  document.getElementById('pendNote').innerHTML = notice('warn',
+    `<strong>This is what the asynchronous model looks like in practice.</strong>
+     ${pTen.short} submitted this document at ${pend.created}. The provider accepted it almost at
+     once. The reporting acknowledgement and the delivery confirmation have not arrived yet. This is
+     normal, it is inside the reporting window, and nobody needs to do anything. The Hub records each
+     remaining leg when it lands, and raises an exception only if a leg is still missing when the
+     window closes.`);
+
+  document.getElementById('legsPending').innerHTML = LEGS_PENDING.map(legRow).join('');
+
+  const waiting = LEGS_PENDING.filter(l => l.st !== 'ok').length;
+  document.getElementById('pendFoot').textContent =
+    waiting + ' of ' + LEGS_PENDING.length + ' legs outstanding · awaiting ' + pend.awaiting +
+    ' · no action required';
+
+  document.getElementById('btnCheck').addEventListener('click', () => {
+    const n = document.getElementById('checkNote');
+    n.style.display = '';
+    n.textContent = 'Checked — ' + waiting +
+      ' legs still awaited. Acknowledgements are pushed by the provider as they arrive.';
+    setTimeout(() => { n.style.display = 'none'; }, 3600);
+  });
+
+  /* ---- exchange details ---- */
+  document.getElementById('kvConn').innerHTML = kv([
+    ['Provider and licence', ASP.provider],
+    ['Endpoint', '<span class="mono-hl">' + ASP.endpoint + '</span>'],
+    ['Authentication', ASP.auth],
+    ['Sender participant', '<span class="mono-hl">' + ASP.sender + '</span> · ' + dTen.short],
+    ['Receiver participant', '<span class="mono-hl">' + ASP.receiver + '</span> · ' + buyer.name]
   ]);
 
-  document.getElementById('notList').innerHTML = NOT_DOES.map(n => `
-    <div class="row" style="align-items:flex-start;gap:9px">
-      <svg style="width:14px;height:14px;flex:none;margin-top:2px;color:var(--fail)" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      <span class="small" style="line-height:1.5">${n}</span>
-    </div>`).join('');
+  document.getElementById('kvDoc').innerHTML = kv([
+    ['Message id', '<span class="mono-hl">' + ASP.msgId + '</span>'],
+    ['Document type', ASP.docType],
+    ['Process', ASP.process],
+    ['Submitted', ASP.sentAt],
+    ['HTTP response', ASP.http + ' · ' + ASP.rtt + ' ms'],
+    ['Peppol reference', '<span class="mono-hl">' + ASP.ref + '</span>'],
+    ['Acknowledgement number', '<span class="mono-hl">' + ASP.ackNo + '</span>'],
+    ['OTA reference', '<span class="mono-hl">' + ASP.otaRef + '</span>']
+  ]);
+
+  /* ---- who does what, stated plainly ---- */
+  document.getElementById('model').innerHTML = teach(
+    `<strong>Who does what, precisely.</strong>
+     The service provider validates the document against the PINT-OM rules and may reject it. A
+     rejection at that point is the provider's, and it comes back before anything is reported or
+     delivered. The provider, not the Hub, reports the Tax Data Document to the OTA — the Hub has no
+     direct channel to the tax authority. The OTA acknowledges that a report was received. It does
+     not clear, approve or reject an invoice, and no invoice waits on it before reaching the buyer.`);
 </script>
 </body>
 </html>
