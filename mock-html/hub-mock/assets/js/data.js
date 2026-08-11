@@ -167,20 +167,36 @@ const SUPPLIERS = [
   { name: 'Jebel Akhdar Cold Chain LLC',    vatin: 'OM1100119966', peppol: '0248:OM1100119966' }
 ];
 
-/* --- the eight outbound stages (proposal §5) -------------------------------
-   Archive is step 5 — BEFORE transmission, not after.                       */
+/* --- the nine outbound stages (proposal §5) --------------------------------
+   Two different things used to share the name "Archive", and it made the
+   order look wrong:
+
+     Record (5)   a hot write to the operational store, BEFORE transmission.
+                  It has to come first — if the send fails, this is the only
+                  evidence of what was attempted, and it is what answers an
+                  auditor asking "show me exactly what you submitted".
+     Archive (9)  the long-term legal record in object storage. Cold, kept
+                  for years, and it contains the ASP acknowledgements — which
+                  do not exist until the round trip has finished. It cannot
+                  be written before the outcome arrives.
+
+   The proposal draws Archive as a datastore fed by both flows and lists it
+   last in the platform's own function order (§ "map → convert → validate →
+   UUID/QR → send → track → archive"). It never enumerates eight stages —
+   that was this mock's invention.                                          */
 const STAGES = ['ERP invoice', 'Collect & map', 'Build XML', 'Validate',
-                'Archive', 'ASP / Peppol', 'Track outcome', 'ERP writeback'];
-const STAGE_SHORT = ['ERP', 'Map', 'XML', 'Validate', 'Archive', 'Send', 'Outcome', 'Writeback'];
+                'Record', 'ASP / Peppol', 'Track outcome', 'Result published', 'Archive'];
+const STAGE_SHORT = ['ERP', 'Map', 'XML', 'Validate', 'Record', 'Send', 'Outcome', 'Result', 'Archive'];
 const STAGE_NOTE = [
   'Invoice and credit-note data',
   'Apply the entity mapping profile',
   'UBL 2.1 · UUID · QR information',
   'Apply PINT-OM rules before sending',
-  'Store XML and audit trail',
+  'Store XML and audit trail before anything is sent',
   'Transmit the valid XML',
   'Acknowledgement and final status',
-  'UUID · status · QR information'
+  'UUID, status and QR held on the interface for the ERP to collect',
+  'Long-term legal record, with the acknowledgements'
 ];
 
 /* documents in flight, by stage — sums to GROUP.todayPending (153) */
@@ -198,27 +214,18 @@ const IN_STAGE_NOTE = [
   'Entity team reviews and posts manually'
 ];
 
-/* --- the five corners (proposal §2) ---------------------------------------- */
-const CORNERS = [
-  { n: 1, name: 'Supplier',      sub: 'The entity’s ERP',  note: 'The Hub sits behind this corner for every participating entity.', us: true },
-  { n: 2, name: 'Supplier’s ASP', sub: 'The group ASP',    note: 'Validates, transmits over Peppol, and reports the Tax Data Document to the OTA.' },
-  { n: 3, name: 'Buyer’s ASP',   sub: 'Their provider',    note: 'Receives the document and delivers it into the buyer’s ERP.' },
-  { n: 4, name: 'Buyer',         sub: 'The customer',      note: 'Inbound supplier invoices reach the group here.' },
-  { n: 5, name: 'OTA Fawtara',   sub: 'Tax Authority',     note: 'Acknowledges that the invoice was successfully reported.' }
-];
-
 /* Three acknowledgements, on three separate legs, arriving at different times.
    This is why the Hub cannot rely on one synchronous response.              */
 const LEGS = [
-  { id: 'ack',   leg: 'Corner 2 → Corner 1', name: 'Validated and accepted by the ASP',
+  { id: 'ack',   leg: 'Service provider → Hub', name: 'Validated and accepted by the ASP',
     at: '28 Jul 2026 09:14:07.633', el: '+0.4 s', st: 'ok',
     body: 'The ASP confirms the e-invoice was generated and validated. This is custody, not delivery.',
     ref: 'ASP-OM-2026-0728-44718' },
-  { id: 'ota',   leg: 'Corner 5 → Corner 2', name: 'Reported to the Tax Authority',
+  { id: 'ota',   leg: 'Tax Authority → service provider', name: 'Reported to the Tax Authority',
     at: '28 Jul 2026 09:15:52.400', el: '+1 m 45 s', st: 'ok',
     body: 'The ASP reported the Tax Data Document to Fawtara and the OTA acknowledged it. The Hub never talks to the OTA directly.',
     ref: 'OTA-RPT-2026-0728-99204' },
-  { id: 'deliv', leg: 'Corner 3 → Corner 2', name: 'Delivered to the buyer',
+  { id: 'deliv', leg: 'Buyer’s provider → service provider', name: 'Delivered to the buyer',
     at: '28 Jul 2026 09:16:41.008', el: '+2 m 34 s', st: 'ok',
     body: 'The buyer’s access point confirmed receipt. This leg is outside the group’s control and can take hours.',
     ref: 'MLS-DELIVERED' }
@@ -239,11 +246,11 @@ const LEGS_PENDING = [
    stage indexes into STAGES; state: ok | active | failed | held             */
 const INVOICES = [
   { no: 'TAC-SINV-2026-04471', tenant: 'TAC', cust: 0, net: 24800.000, vat: 1240.000, total: 26040.000,
-    cur: 'OMR', type: 'Invoice', scen: 'B2B', stage: 7, state: 'ok', retry: 0, created: '28 Jul 09:14:02',
+    cur: 'OMR', type: 'Invoice', scen: 'B2B', stage: 8, state: 'ok', retry: 0, created: '28 Jul 09:14:02',
     uuid: 'b7f4c2e1-9a3d-5c8b-a1f6-2e7d4b9c0a35', ackNo: 'ASP-OM-2026-0728-44718', ref: 'PEP-8842-2026',
     lines: 6, po: 'PO-88213' },
   { no: 'TAC-SINV-2026-04472', tenant: 'TAC', cust: 1, net: 118400.000, vat: 5920.000, total: 124320.000,
-    cur: 'OMR', type: 'Invoice', scen: 'B2B', stage: 7, state: 'ok', retry: 0, created: '28 Jul 09:21:47',
+    cur: 'OMR', type: 'Invoice', scen: 'B2B', stage: 8, state: 'ok', retry: 0, created: '28 Jul 09:21:47',
     uuid: 'c1a8d3f2-4b7e-6d9c-b2a7-3f8e5c0d1b46', ackNo: 'ASP-OM-2026-0728-44719', ref: 'PEP-8843-2026',
     lines: 12, po: 'PO-88220' },
   { no: 'ENH-SINV-2026-01180', tenant: 'ENH', cust: 3, net: 86200.000, vat: 0.000, total: 86200.000,
@@ -258,11 +265,11 @@ const INVOICES = [
     cur: 'OMR', type: 'Invoice', scen: 'B2B', stage: 3, state: 'active', retry: 0, created: '28 Jul 10:14:05',
     uuid: 'f4d1a6c5-7e0b-9a2f-e5d0-6c1b8f3a4e79', ackNo: null, ref: null, lines: 8, po: 'PO-4471' },
   { no: 'TAC-CRNT-2026-00218', tenant: 'TAC', cust: 0, net: -4200.000, vat: -210.000, total: -4410.000,
-    cur: 'OMR', type: 'Credit Note', scen: 'B2B', stage: 7, state: 'ok', retry: 0, created: '28 Jul 10:26:14',
+    cur: 'OMR', type: 'Credit Note', scen: 'B2B', stage: 8, state: 'ok', retry: 0, created: '28 Jul 10:26:14',
     uuid: 'c7a4d9f8-0b3e-2d5c-b8a3-9f4e1c6d7b02', ackNo: 'ASP-OM-2026-0728-44736', ref: 'PEP-8863-2026',
     lines: 1, po: null, against: 'TAC-SINV-2026-04390' },
   { no: 'TCC-SINV-2026-02207', tenant: 'TCC', cust: 5, net: 84.400, vat: 4.220, total: 88.620,
-    cur: 'OMR', type: 'Simplified', scen: 'B2C', stage: 7, state: 'ok', retry: 0, created: '28 Jul 10:18:52',
+    cur: 'OMR', type: 'Simplified', scen: 'B2C', stage: 8, state: 'ok', retry: 0, created: '28 Jul 10:18:52',
     uuid: 'a5e2b7d6-8f1c-0b3a-f6e1-7d2c9a4b5f80', ackNo: 'ASP-OM-2026-0728-44731', ref: 'PEP-8859-2026',
     lines: 5, po: null },
   { no: 'TDO-SINV-2026-00611', tenant: 'TDO', cust: 7, net: 42750.000, vat: 2137.500, total: 44887.500,
@@ -282,7 +289,7 @@ const INVOICES = [
     uuid: 'a1e8b3d2-4f7c-6b9a-f2e7-3d8c5a0b1f46', ackNo: null, ref: null, lines: 2, po: null,
     owner: 'platform' },
   { no: 'TDO-SINV-2026-00610', tenant: 'TDO', cust: 5, net: 1890.000, vat: 94.500, total: 1984.500,
-    cur: 'OMR', type: 'Simplified', scen: 'B2C', stage: 7, state: 'ok', retry: 0, created: '28 Jul 08:14:33',
+    cur: 'OMR', type: 'Simplified', scen: 'B2C', stage: 8, state: 'ok', retry: 0, created: '28 Jul 08:14:33',
     uuid: 'b2f9c4e3-5a8d-7c0b-a3f8-4e9d6b1c2a57', ackNo: 'ASP-OM-2026-0728-44702', ref: 'PEP-8801-2026',
     lines: 3, po: null }
 ];
@@ -396,7 +403,12 @@ const TRANSFORMS = [
   { v: 'pct',                n: 'pct — percentage as a number' },
   { v: 'nullable',           n: 'nullable — allow an empty value' },
   { v: 'derive:uuidv5',      n: 'derive:uuidv5 — generated by the Hub' },
-  { v: 'derive:0248',        n: 'derive:0248 — build the Peppol participant ID' }
+  { v: 'derive:0248',        n: 'derive:0248 — build the Peppol participant ID' },
+  { v: 'derive:txntype',     n: 'derive:txntype — Standard or Simplified' },
+  { v: 'derive:itemkind',    n: 'derive:itemkind — goods or services, from the item group' },
+  { v: 'const',              n: 'const — the same value on every document' },
+  { v: 'const:0248',         n: 'const:0248 — fixed scheme identifier' },
+  { v: 'const:VAT',          n: 'const:VAT — fixed tax scheme' }
 ];
 
 /* --- mapping profile -------------------------------------------------------
@@ -408,12 +420,22 @@ const MAPPING = [
     { erp: 'BillingDocumentType',    std: 'BT-3',  stdName: 'Invoice type code',     xf: 'codelist:UNCL1001', req: 'Mandatory', ok: true },
     { erp: 'TransactionCurrency',    std: 'BT-5',  stdName: 'Document currency',     xf: '',            req: 'Mandatory', ok: true },
     { erp: 'BillingDocumentIsCancelled', std: 'BT-3', stdName: 'Credit note flag',   xf: 'map:381',     req: 'Conditional', ok: true },
-    { erp: '—',                      std: 'BTOM-002', stdName: 'Document UUID',      xf: 'derive:uuidv5', req: 'Mandatory', ok: true, derived: true }
+    { erp: '—',                      std: 'BTOM-002', stdName: 'Document UUID',      xf: 'derive:uuidv5', req: 'Mandatory', ok: true, derived: true,
+      dnote: 'Built from the invoice number, the seller VAT identifier and the issue date. Stable — a resubmission of the same invoice produces the same UUID.' },
+    { erp: '—',                      std: 'BTOM-001', stdName: 'Invoice transaction type', xf: 'derive:txntype', req: 'Mandatory', ok: true, derived: true,
+      dnote: 'Standard or Simplified, decided from whether the buyer carries a VAT registration.' },
+    { erp: '—',                      std: 'IBT-023', stdName: 'Business process type', xf: 'const', req: 'Mandatory', ok: true, derived: true, constant: true,
+      dnote: 'urn:peppol:bis:billing — identical on every document, for every entity.' },
+    { erp: '—',                      std: 'IBT-024', stdName: 'Specification identifier', xf: 'const', req: 'Mandatory', ok: true, derived: true, constant: true,
+      dnote: 'urn:peppol:pint:billing-1@om-1 — declares the OM-1.1 ruleset the document is validated against.' }
   ]},
   { grp: 'Seller party', rows: [
     { erp: 'CompanyCode',            std: 'BT-27', stdName: 'Seller name',           xf: 'lookup:company', req: 'Mandatory', ok: true },
     { erp: 'CompanyVATNumber',       std: 'BT-31', stdName: 'Seller VAT identifier', xf: 'prefix:OM',   req: 'Mandatory', ok: true },
-    { erp: '—',                      std: 'BTOM-004', stdName: 'Seller participant ID', xf: 'derive:0248', req: 'Mandatory', ok: true, derived: true },
+    { erp: '—',                      std: 'BTOM-004', stdName: 'Seller participant ID', xf: 'derive:0248', req: 'Mandatory', ok: true, derived: true,
+      dnote: 'The VAT identifier expressed as a Peppol participant under scheme 0248, so the network can route to this entity.' },
+    { erp: '—',                      std: 'IBT-034-1', stdName: 'Seller address scheme id', xf: 'const:0248', req: 'Mandatory', ok: true, derived: true, constant: true,
+      dnote: 'Names the scheme the seller electronic address belongs to. Fixed for Oman.' },
     { erp: 'CompanyAddressCity',     std: 'BT-37', stdName: 'Seller city',           xf: '',            req: 'Mandatory', ok: true },
     { erp: 'CompanyCountry',         std: 'BT-40', stdName: 'Seller country code',   xf: 'iso:alpha2',  req: 'Mandatory', ok: true }
   ]},
@@ -431,7 +453,9 @@ const MAPPING = [
     { erp: 'TaxAmount',              std: 'BT-110', stdName: 'Invoice total VAT amount', xf: 'decimal:3', req: 'Mandatory', ok: true },
     { erp: 'InvoiceTotal',           std: 'BT-112', stdName: 'Invoice total with VAT',  xf: 'decimal:3', req: 'Mandatory', ok: true },
     { erp: 'AmountDue',              std: 'BT-115', stdName: 'Amount due for payment',  xf: 'decimal:3', req: 'Mandatory', ok: true },
-    { erp: 'TaxRate',                std: 'BT-119', stdName: 'VAT category rate',       xf: 'pct',       req: 'Mandatory', ok: true }
+    { erp: 'TaxRate',                std: 'BT-119', stdName: 'VAT category rate',       xf: 'pct',       req: 'Mandatory', ok: true },
+    { erp: '—',                      std: 'IBT-118-1', stdName: 'Tax scheme code',       xf: 'const:VAT', req: 'Mandatory', ok: true, derived: true, constant: true,
+      dnote: 'Always VAT for Oman. The ERP does not need to carry a tax scheme code at all.' }
   ]},
   { grp: 'Line items', rows: [
     { erp: 'ProductCode',            std: 'BT-155', stdName: 'Item seller identifier', xf: '',          req: 'Mandatory', ok: true },
@@ -441,7 +465,9 @@ const MAPPING = [
     { erp: 'NetPriceAmount',         std: 'BT-146', stdName: 'Item net price',         xf: 'decimal:3', req: 'Mandatory', ok: true },
     { erp: '',                       std: 'BT-158', stdName: 'Item classification code', xf: '',        req: 'Optional',  ok: false,
       fallback: 'Left empty — optional under the standard',
-      note: 'Not held anywhere in this ERP. Optional, so it does not block submission.' }
+      note: 'Not held anywhere in this ERP. Optional, so it does not block submission.' },
+    { erp: '—',                      std: 'BTOM-019', stdName: 'Goods or services indicator', xf: 'derive:itemkind', req: 'Mandatory', ok: true, derived: true,
+      dnote: 'Read from the item group on each line. Lines that resolve to neither are held for review rather than guessed.' }
   ]}
 ];
 
@@ -644,17 +670,17 @@ const SYNC_STEPS = [
     body: 'Accepted by the accredited provider in 388 ms. Peppol reference PEP-8842-2026.' },
   { name: 'Outcomes tracked on three legs', t: '28 Jul 09:16:41', st: 'ok',
     body: 'ASP accepted it at 09:14:07. The ASP reported it to the Tax Authority at 09:15:52. The buyer’s provider confirmed delivery at 09:16:41.' },
-  { name: 'Written back to the ERP', t: '28 Jul 09:16:43', st: 'ok',
-    body: 'Fields updated on the ERP invoice record: UUID, e-invoice status, acknowledgement number, Peppol reference and QR information.' },
-  { name: 'QR available on the printed invoice', t: '28 Jul 09:16:43', st: 'ok',
-    body: 'QR information written back to the invoice and rendered on the customer copy by the ERP print format.' }
+  { name: 'Result published on the interface', t: '28 Jul 09:16:43', st: 'ok',
+    body: 'Held against this invoice and available to the ERP: UUID, e-invoice status, acknowledgement number, Peppol reference and QR information. The ERP-side connector that collects them is built by the entity.' },
+  { name: 'Collected by the ERP', t: '28 Jul 09:16:43', st: 'ok',
+    body: 'The entity’s connector read the result and stored it on the invoice, where the print format renders the QR on the customer copy.' }
 ];
 
 /* --- what each side provides (proposal §7 delivery boundary) --------------- */
 const BOUNDARY_ENTITY = [
   'Complete invoice data and the master data behind it',
   'An enabled interface, an integration user and a test environment',
-  'ERP fields and permissions for writeback',
+  'The ERP-side connector that collects the result, and the fields to hold it',
   'ERP-side changes where a required field is missing',
   'Finance users for testing, exceptions and sign-off'
 ];

@@ -6,33 +6,20 @@
 <title>ASP Exchange — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
   /* page-local — ASP exchange only */
-  .where { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0; }
-  .wcell { padding: 13px 16px; }
-  .wcell + .wcell { border-left: 1px solid var(--line); }
-  @media (max-width: 900px) {
-    .where { grid-template-columns: 1fr; }
-    .wcell + .wcell { border-left: 0; border-top: 1px solid var(--line); }
-  }
-  .wcell .wk { font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
-               text-transform: uppercase; color: var(--text-lo); }
-  .wcell .wv { font-size: 13px; font-weight: 600; margin-top: 4px; }
-  .wcell .wb { font-size: 11.5px; color: var(--text-mid); margin-top: 5px; line-height: 1.55; }
-  .flowline { font-size: 12px; color: var(--text-mid); line-height: 1.7; max-width: 96ch; }
-  .mono-hl { font-family: var(--font-mono); font-size: 11.5px; }
+  .mono-hl { font-family: var(--font-mono); font-size: 12.5px; }
   /* the two document cards sit side by side; the acknowledged one is the wider */
   .docpair { grid-template-columns: minmax(0,1.06fr) minmax(0,1fr); align-items: start; }
   @media (max-width: 1100px) { .docpair { grid-template-columns: 1fr; } }
   .card-body { padding: 15px 16px; }
   .page-head { margin-bottom: 16px; }
-  .wcell { padding: 12px 16px; }
   /* keyboard-operable disclosure for the technical detail */
   details.disc > summary {
     list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
-    font-size: 11.5px; font-weight: 600; color: var(--accent-hi);
+    font-size: 12.5px; font-weight: 600; color: var(--accent-hi);
     border: 1px solid var(--line-hard); border-radius: 999px; padding: 5px 13px;
   }
   details.disc > summary::-webkit-details-marker { display: none; }
@@ -61,20 +48,6 @@
       </div>
       <div class="page-actions">
         <span class="small dim" id="provNote"></span>
-      </div>
-    </div>
-
-    <div class="card mb16">
-      <div class="card-head">
-        <h2 class="grow">The five-corner model</h2>
-        <span class="tag">Oman · Fawtara</span>
-      </div>
-      <div class="card-body">
-        <div id="corners"></div>
-      </div>
-      <div class="where" style="border-top:1px solid var(--line)" id="whereWeSit"></div>
-      <div class="card-body" style="border-top:1px solid var(--line)">
-        <p class="flowline" id="flowLine"></p>
       </div>
     </div>
 
@@ -151,36 +124,6 @@
     'Following one document — <span class="num">' + doc.no + '</span> from ' + dTen.short +
     ' to ' + buyer.name + ' — from the moment it left the Hub.';
   document.getElementById('provNote').textContent = ASP.provider;
-
-  /* ---- the five corners ---- */
-  document.getElementById('corners').innerHTML = cornerBoard();
-
-  document.getElementById('whereWeSit').innerHTML = `
-    <div class="wcell">
-      <div class="wk">Corner 1</div>
-      <div class="wv">Where the group sits</div>
-      <div class="wb">The Hub sits behind corner 1 for every participating entity. Each of the
-        ${GROUP.entities} is its own participant, and the Hub issues on their behalf.</div>
-    </div>
-    <div class="wcell">
-      <div class="wk">Corner 2</div>
-      <div class="wv">The group's service provider</div>
-      <div class="wb">One accredited provider relationship covers all of the group's participant
-        identities. It validates, it transmits, and it reports.</div>
-    </div>
-    <div class="wcell">
-      <div class="wk">Corners 3 and 4</div>
-      <div class="wv">Where supplier invoices arrive</div>
-      <div class="wb">When a group company is the buyer it is corner 4, and its provider is corner 3.
-        That is the inbound direction shown on the previous screen.</div>
-    </div>`;
-
-  document.getElementById('flowLine').innerHTML =
-    `<strong>The flow.</strong> The supplier's service provider validates the document against the
-     PINT-OM rules and, if it passes, transmits the UBL 2.1 document over Peppol to the buyer's
-     service provider. Separately — on its own leg, not as part of that transmission — the same
-     provider reports the Tax Data Document to the OTA. Two destinations, two answers, arriving at
-     two different times.`;
 
   /* ---- the three legs ---- */
   document.getElementById('legTitle').innerHTML =

@@ -6,20 +6,20 @@
 <title>Companies — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
   /* ---- page-local to hub/tenants.html. Do not move to app.css. ---- */
   .wavecard{border:1px solid var(--line);border-radius:var(--r-md);padding:11px 13px;background:var(--surface)}
   .wavecard.is-active{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
     background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
-  .wavecard .wn2{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--text-lo)}
-  .wavecard .wv{font-size:15px;font-weight:700;white-space:nowrap;flex:none}
+  .wavecard .wn2{font-size: 11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--text-lo)}
+  .wavecard .wv{font-size: 16.5px;font-weight:700;white-space:nowrap;flex:none}
   .wavepip{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--line-hard);margin-right:4px}
   .wavepip.complete{background:var(--ok)} .wavepip.active{background:var(--warn)} .wavepip.planned{background:var(--idle)}
   .mrow{display:flex;gap:13px;align-items:flex-start;padding:11px 0}
   .mrow + .mrow{border-top:1px solid var(--line)}
-  .mrow .mcount{font-family:var(--font-mono);font-size:20px;font-weight:600;min-width:38px;text-align:right}
+  .mrow .mcount{font-family:var(--font-mono);font-size: 22px;font-weight:600;min-width:38px;text-align:right}
   tr.is-self td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
 </style>
 </head>
@@ -66,7 +66,7 @@
           <table class="tbl">
             <thead>
               <tr>
-                <th>Company</th><th>ERP</th><th class="nowrap">Wave</th>
+                <th style="min-width:168px">Company</th><th>ERP</th><th class="nowrap">Wave</th>
                 <th style="min-width:210px">How we connect</th>
                 <th style="min-width:140px">Mapping progress</th><th>Status</th>
               </tr>

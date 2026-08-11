@@ -6,19 +6,19 @@
 <title>Reports — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
 /* page-local — Reports only */
 .repcard .rtag { display: inline-block; margin-top: 8px; }
 .tbl th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
 .tbl th.sortable:hover { color: var(--accent-hi); }
-.tbl th.sortable .sarrow { opacity: .35; font-size: 9px; margin-left: 3px; }
+.tbl th.sortable .sarrow { opacity: .35; font-size: 11.5px; margin-left: 3px; }
 .tbl th.sortable.is-sorted { color: var(--accent-hi); }
 .tbl th.sortable.is-sorted .sarrow { opacity: 1; }
 .tbl tfoot td {
   padding: 10px 11px; border-top: 2px solid var(--line-hard); font-weight: 700;
-  background: var(--bg-alt); font-size: 12.5px;
+  background: var(--bg-alt); font-size: 14px;
 }
 .tbl tfoot td:first-child { padding-left: 14px; }
 .tbl tfoot td:last-child  { padding-right: 14px; }
@@ -26,11 +26,11 @@
 .comprow { display: grid; grid-template-columns: minmax(0,1.1fr) 90px 90px 74px minmax(120px,1fr) 62px;
   gap: 12px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--line); }
 .comprow:last-child { border-bottom: 0; }
-.comprow.head { background: var(--bg-alt); font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+.comprow.head { background: var(--bg-alt); font-size: 11.5px; font-weight: 700; letter-spacing: .08em;
   text-transform: uppercase; color: var(--text-lo); }
-.comprow .cnum { font-variant-numeric: tabular-nums; text-align: right; font-size: 12.5px; }
-.comprow .cname { font-size: 12.5px; font-weight: 600; }
-.comprow .cpct { font-variant-numeric: tabular-nums; text-align: right; font-size: 12px; font-weight: 600; }
+.comprow .cnum { font-variant-numeric: tabular-nums; text-align: right; font-size: 14px; }
+.comprow .cname { font-size: 14px; font-weight: 600; }
+.comprow .cpct { font-variant-numeric: tabular-nums; text-align: right; font-size: 13px; font-weight: 600; }
 .repbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 @media (max-width: 900px) {
   .comprow { grid-template-columns: minmax(0,1fr) 70px 70px; }

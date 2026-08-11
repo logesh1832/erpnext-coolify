@@ -6,14 +6,14 @@
 <title>Overview — Towell Auto Centre · Entity Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
   /* page-local — the entity's own supplier documents, users and reports */
   .suprow { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.2fr) 130px minmax(0,1fr) auto;
             gap: 12px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--line); }
   .suprow:last-child { border-bottom: 0; }
-  .suprow.head { background: var(--bg-alt); font-size: 10.5px; font-weight: 700; letter-spacing: .09em;
+  .suprow.head { background: var(--bg-alt); font-size: 11.5px; font-weight: 700; letter-spacing: .09em;
                  text-transform: uppercase; color: var(--text-lo); }
   .invite { display: grid; grid-template-columns: minmax(0,1fr) 170px auto; gap: 8px; align-items: center; }
   @media (max-width: 900px) {
@@ -31,7 +31,7 @@
   .botpair { display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
              gap: 16px; align-items: start; margin-top: 24px; }
   /* the people rows are narrower here, so the fixed columns give ground first */
-  #users .userrow { grid-template-columns: 28px minmax(0,1fr) 108px 92px auto; gap: 9px; }
+  #users .userrow { grid-template-columns: 28px minmax(0,1fr) 108px 92px 70px; gap: 9px; }
   @media (max-width: 1180px) {
     .topband, .botpair, .excgrid { grid-template-columns: 1fr; }
   }
@@ -256,7 +256,7 @@
 
   document.getElementById('invoiceRows').innerHTML = MINE.map(r => `
     <tr>
-      <td><a class="link id nowrap" href="#">${r.no}</a></td>
+      <td><a class="link id nowrap" href="document.html?no=${encodeURIComponent(r.no)}">${r.no}</a></td>
       <td class="small">${r.cust}</td>
       <td class="r num nowrap" style="font-weight:600">${omr(r.total)}</td>
       <td>${r.state === 'ok' && r.stage === 6 ? pill('acknowledged')
@@ -351,7 +351,9 @@
        <div>In your ERP</div><div>Status</div></div>` +
     MY_INBOUND.map(d => `
       <div class="suprow">
-        <div><a class="link id nowrap" href="#">${d.no}</a>
+        <!-- Not a link: inbound documents have a different shape and no detail
+             view. Styled as an identifier so it does not invite a dead click. -->
+        <div><span class="id nowrap" style="font-weight:600">${d.no}</span>
           ${d.credit ? '<span class="tag" style="margin-left:6px">CN</span>' : ''}
           <div class="tiny dim num">received ${d.recv}</div></div>
         <div class="small">${SUPPLIERS[d.supplier].name}</div>

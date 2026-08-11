@@ -6,7 +6,7 @@
 <title>Mapping Studio — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
 /* page-local only — nothing here is shared with other screens */
@@ -17,7 +17,7 @@
   grid-template-columns: minmax(0,1fr) auto;
   background: var(--bg-alt); align-items: center;
   padding-top: 7px; padding-bottom: 7px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
   color: var(--accent-hi);
 }
 /* the group header is a real <button> so it is keyboard-operable */
@@ -38,15 +38,15 @@ button.map-row.edit.ghead:focus-visible { outline: 2px solid var(--accent); outl
 .gchev svg { width: 12px; height: 12px; display: block; }
 .ghead.is-open .gchev { transform: rotate(90deg); }
 .derivedcell { padding-top: 7px; }
-.derivedcell .d1 { font-size: 12px; font-weight: 500; color: var(--text-mid); }
+.derivedcell .d1 { font-size: 13px; font-weight: 500; color: var(--text-mid); }
 .fbwrap { margin-top: 6px; }
 .fbwrap .flab {
-  font-size: 9.5px; letter-spacing: .05em; text-transform: uppercase;
+  font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase;
   color: var(--warn); font-weight: 700; display: block; margin-bottom: 3px;
 }
-.confirm { font-size: 11.5px; color: var(--ok); font-weight: 600; }
+.confirm { font-size: 12.5px; color: var(--ok); font-weight: 600; }
 .pane-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-.xfdemo { font-family: var(--font-mono); font-size: 11px; white-space: pre-wrap; }
+.xfdemo { font-family: var(--font-mono); font-size: 12px; white-space: pre-wrap; }
 #mapTable .map-row.is-hidden { display: none; }
 #srcJson, #outXml { max-height: 168px; overflow: auto; }
 /* filter tabs sit in the card head rather than on their own line */
@@ -63,7 +63,7 @@ section + section { margin-top: 14px; }
 .hr { margin: 12px 0; }
 details.disc > summary {
   list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
-  font-size: 11.5px; font-weight: 600; color: var(--accent-hi);
+  font-size: 12.5px; font-weight: 600; color: var(--accent-hi);
   border: 1px solid var(--line-hard); border-radius: 999px; padding: 4px 12px;
 }
 details.disc > summary::-webkit-details-marker { display: none; }
@@ -71,6 +71,7 @@ details.disc > summary:focus-visible { outline: 2px solid var(--accent); outline
 details.disc[open] > summary { margin-bottom: 10px; }
 details.disc > summary .gchev { color: inherit; }
 details.disc[open] > summary .gchev { transform: rotate(90deg); }
+  .pane-scroll { max-height: 300px; overflow-y: auto; }
 </style>
 </head>
 <body class="surface-hub" data-surface="hub" data-nav="mapping"
@@ -114,6 +115,7 @@ details.disc[open] > summary .gchev { transform: rotate(90deg); }
             <button class="tab is-active" data-tab="all">All fields</button>
             <button class="tab" data-tab="unresolved">Unresolved</button>
             <button class="tab" data-tab="mandatory">Mandatory only</button>
+            <button class="tab" data-tab="derived">Derived</button>
           </div>
           <span class="small dim" id="profNote"></span>
           <span class="pill pill-accent"><i class="dot"></i><span id="shown">0</span> shown</span>
@@ -142,14 +144,14 @@ details.disc[open] > summary .gchev { transform: rotate(90deg); }
                 <div class="eyebrow">What the ERP sends</div>
                 <span class="tiny dim" id="srcCount"></span>
               </div>
-              <div class="code" id="srcJson"></div>
+              <div class="code pane-scroll" id="srcJson"></div>
             </div>
             <div>
               <div class="pane-h">
                 <div class="eyebrow">What we build</div>
-                <span class="tiny dim">UBL 2.1</span>
+                <span class="tiny dim" id="outCount"></span>
               </div>
-              <div class="code code-lines" id="outXml"></div>
+              <div class="code code-lines pane-scroll" id="outXml"></div>
             </div>
           </div>
           <div class="hr"></div>
@@ -169,6 +171,7 @@ details.disc[open] > summary .gchev { transform: rotate(90deg); }
   </div>
 </main>
 
+<script src="../assets/js/pint-fields.js"></script>
 <script src="../assets/js/data.js"></script>
 <script src="../assets/js/ui.js"></script>
 <script src="../assets/js/shell.js"></script>
@@ -230,6 +233,8 @@ MAPPING.forEach(function (g, gi) {
       key: gi + '-' + ri, gi: gi, grp: g.grp,
       std: r.std, stdName: r.stdName, req: r.req,
       derived: r.derived === true,
+      constant: r.constant === true,
+      dnote: r.dnote || '',
       startedUnresolved: r.ok === false,
       note: r.note || '',
       erp0: (r.erp && r.erp !== '—') ? r.erp : '',
@@ -265,9 +270,12 @@ function xfSelect(s) {
 function rowHtml(s) {
   const good = hasSource(s);
   const left = s.derived
-    ? '<div class="derivedcell"><div class="d1">Generated by the Hub ' +
-        '<span class="chip info">derived</span></div>' +
-        '<div class="map-note">No ERP field is read for this value.</div></div>'
+    ? '<div class="derivedcell"><div class="d1">' +
+        (s.constant ? 'Set by the Hub ' : 'Generated by the Hub ') +
+        '<span class="chip info">' + (s.constant ? 'constant' : 'derived') + '</span></div>' +
+        '<div class="map-note">' +
+          (s.dnote || 'No ERP field is read for this value.') +
+        '</div></div>'
     : combo('cb-' + s.key, s.erp, null, 'Search 386 discovered fields…');
 
   const fb = s.startedUnresolved
@@ -362,7 +370,7 @@ function renderTiles() {
 
   document.getElementById('tiles').innerHTML = [
     stat({
-      label: 'Fields resolved',
+      label: 'Bindings resolved',
       value: resolved + '<span style="font-size:15px;color:var(--text-lo)"> / ' + TOTAL_IN_PROFILE + '</span>',
       meta: unresolved === 0
         ? 'Every field in the profile has a source'
@@ -385,16 +393,23 @@ function renderTiles() {
 }
 
 /* --- live preview: what the ERP sends ------------------------------------- */
+/* --- live preview -----------------------------------------------------------
+   Both panes are driven by PINT_FIELDS, generated from the real OM-1.1
+   ruleset (core/data/pint_om_invoice_v1.json). Left is what the ERP hands
+   over in its own vocabulary; right is the UBL we build from it. Only fields
+   this invoice actually carries are rendered — the rest are counted, not
+   drawn as empty rows, because a column of blanks reads as missing data. */
+
+/* the ERP payload: distinct source fields, in the order the standard needs */
 function srcJson() {
   const seen = {}, picked = [];
-  ROWS.forEach(function (s) {
-    if (s.derived || !s.erp) return;
-    const sc = ERP_SCHEMA.find(x => x.f === s.erp);
-    if (!sc || seen[sc.f]) return;
-    seen[sc.f] = 1; picked.push(sc);
+  PINT_FIELDS.forEach(function (f) {
+    if (!f.v || !f.s || seen[f.s]) return;
+    seen[f.s] = 1;
+    picked.push({ f: f.s, ex: f.v });
   });
   document.getElementById('srcCount').textContent =
-    picked.length + (picked.length === 1 ? ' field read' : ' fields read');
+    picked.length + ' fields read from ERPNext';
   if (!picked.length) return '{ }';
   let w = 0;
   picked.forEach(function (p) { w = Math.max(w, p.f.length); });
@@ -417,91 +432,59 @@ function val(key) {
   return v === '' ? null : v;
 }
 
-/* --- live preview: the UBL we build --------------------------------------- */
+/* --- the UBL we build ------------------------------------------------------
+   Assembled from each field's real ubl_path. Paths carry two things we strip
+   before nesting: schema predicates such as [cac:TaxScheme = "VAT"], and a
+   trailing /@attr which belongs on the parent element, not as a child. */
 function outXml() {
-  const cur = val('0-3') || 'OMR';
-  const ca  = ' currencyID="' + cur + '"';
+  const cur = 'OMR';
+  const tree = { kids: [], attrs: {}, text: null };
+
+  function node(path) {
+    let cursor = tree;
+    path.forEach(function (seg) {
+      let hit = cursor.kids.find(k => k.name === seg);
+      if (!hit) { hit = { name: seg, kids: [], attrs: {}, text: null }; cursor.kids.push(hit); }
+      cursor = hit;
+    });
+    return cursor;
+  }
+
+  PINT_FIELDS.forEach(function (f) {
+    if (!f.v || !f.p) return;
+    const clean = f.p.replace(/\s*\[[^\]]*\]/g, '');
+    const parts = clean.split('/');
+    const last = parts[parts.length - 1];
+    if (last.charAt(0) === '@') {
+      node(parts.slice(0, -1)).attrs[last.slice(1)] = f.v;
+    } else {
+      const n = node(parts);
+      n.text = f.v;
+      if (/Amount$/.test(last)) n.attrs.currencyID = cur;
+    }
+  });
+
   const L = [];
-  const put = (v, line) => { if (v !== null && v !== undefined && v !== '') L.push(line); };
-
-  let typeCode = val('0-2');
-  if (val('0-4') === '381') typeCode = '381';
-
   L.push('<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"');
   L.push('         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"');
   L.push('         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2">');
   L.push('  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>');
-  put(val('0-0'), '  <cbc:ID>' + val('0-0') + '</cbc:ID>');
-  put(val('0-5'), '  <cbc:UUID>' + val('0-5') + '</cbc:UUID>');
-  put(val('0-1'), '  <cbc:IssueDate>' + val('0-1') + '</cbc:IssueDate>');
-  put(typeCode,   '  <cbc:InvoiceTypeCode>' + typeCode + '</cbc:InvoiceTypeCode>');
-  put(val('0-3'), '  <cbc:DocumentCurrencyCode>' + val('0-3') + '</cbc:DocumentCurrencyCode>');
 
-  L.push('  <cac:AccountingSupplierParty>');
-  L.push('    <cac:Party>');
-  put(val('1-2'), '      <cbc:EndpointID schemeID="' + PART_SCHEME + '">' + val('1-2') + '</cbc:EndpointID>');
-  put(val('1-0'), '      <cac:PartyLegalEntity><cbc:RegistrationName>' + val('1-0') +
-                  '</cbc:RegistrationName></cac:PartyLegalEntity>');
-  put(val('1-1'), '      <cac:PartyTaxScheme><cbc:CompanyID>' + val('1-1') + '</cbc:CompanyID></cac:PartyTaxScheme>');
-  L.push('      <cac:PostalAddress>');
-  put(val('1-3'), '        <cbc:CityName>' + val('1-3') + '</cbc:CityName>');
-  put(val('1-4'), '        <cac:Country><cbc:IdentificationCode>' + val('1-4') +
-                  '</cbc:IdentificationCode></cac:Country>');
-  L.push('      </cac:PostalAddress>');
-  L.push('    </cac:Party>');
-  L.push('  </cac:AccountingSupplierParty>');
+  (function walk(n, depth) {
+    n.kids.forEach(function (k) {
+      const pad = new Array(depth * 2 + 1).join(' ');
+      let a = '';
+      Object.keys(k.attrs).forEach(function (key) { a += ' ' + key + '="' + k.attrs[key] + '"'; });
+      if (k.text !== null && !k.kids.length) {
+        L.push(pad + '<' + k.name + a + '>' + k.text + '</' + k.name + '>');
+      } else {
+        L.push(pad + '<' + k.name + a + '>');
+        walk(k, depth + 1);
+        L.push(pad + '</' + k.name + '>');
+      }
+    });
+  })(tree, 1);
 
-  L.push('  <cac:AccountingCustomerParty>');
-  L.push('    <cac:Party>');
-  put(val('2-0'), '      <cac:PartyIdentification><cbc:ID>' + val('2-0') + '</cbc:ID></cac:PartyIdentification>');
-  put(val('2-1'), '      <cac:PartyLegalEntity><cbc:RegistrationName>' + val('2-1') +
-                  '</cbc:RegistrationName></cac:PartyLegalEntity>');
-  put(val('2-2'), '      <cac:PartyTaxScheme><cbc:CompanyID>' + val('2-2') + '</cbc:CompanyID></cac:PartyTaxScheme>');
-  L.push('      <cac:PostalAddress>');
-  const street = val('2-4');
-  if (street) {
-    L.push('        <cbc:StreetName>' + street + '</cbc:StreetName>');
-  } else {
-    const fb = (row('2-4').fb || '').trim();
-    L.push('        <!-- BT-50 not readable from this ERP — fallback applied -->');
-    if (fb) L.push('        <cbc:StreetName>' + fb + '</cbc:StreetName>');
-  }
-  put(val('2-3'), '        <cac:Country><cbc:IdentificationCode>' + val('2-3') +
-                  '</cbc:IdentificationCode></cac:Country>');
-  L.push('      </cac:PostalAddress>');
-  L.push('    </cac:Party>');
-  L.push('  </cac:AccountingCustomerParty>');
-
-  L.push('  <cac:TaxTotal>');
-  put(val('3-1'), '    <cbc:TaxAmount' + ca + '>' + val('3-1') + '</cbc:TaxAmount>');
-  put(val('3-4'), '    <cac:TaxSubtotal><cac:TaxCategory><cbc:Percent>' + val('3-4') +
-                  '</cbc:Percent></cac:TaxCategory></cac:TaxSubtotal>');
-  L.push('  </cac:TaxTotal>');
-
-  L.push('  <cac:LegalMonetaryTotal>');
-  put(val('3-0'), '    <cbc:LineExtensionAmount' + ca + '>' + val('3-0') + '</cbc:LineExtensionAmount>');
-  put(val('3-2'), '    <cbc:TaxInclusiveAmount' + ca + '>' + val('3-2') + '</cbc:TaxInclusiveAmount>');
-  put(val('3-3'), '    <cbc:PayableAmount' + ca + '>' + val('3-3') + '</cbc:PayableAmount>');
-  L.push('  </cac:LegalMonetaryTotal>');
-
-  L.push('  <cac:InvoiceLine>');
-  const qty = val('4-2'), uom = val('4-3');
-  if (qty) L.push('    <cbc:InvoicedQuantity' + (uom ? ' unitCode="' + uom + '"' : '') + '>' + qty +
-                  '</cbc:InvoicedQuantity>');
-  L.push('    <cac:Item>');
-  put(val('4-1'), '      <cbc:Name>' + val('4-1') + '</cbc:Name>');
-  put(val('4-0'), '      <cac:SellersItemIdentification><cbc:ID>' + val('4-0') +
-                  '</cbc:ID></cac:SellersItemIdentification>');
-  const cls = val('4-5');
-  if (cls) {
-    L.push('      <cac:CommodityClassification><cbc:ItemClassificationCode>' + cls +
-           '</cbc:ItemClassificationCode></cac:CommodityClassification>');
-  } else {
-    L.push('      <!-- BT-158 not held in this ERP — optional under the standard, so omitted -->');
-  }
-  L.push('    </cac:Item>');
-  put(val('4-4'), '    <cac:Price><cbc:PriceAmount' + ca + '>' + val('4-4') + '</cbc:PriceAmount></cac:Price>');
-  L.push('  </cac:InvoiceLine>');
   L.push('</Invoice>');
   return L.join('\n');
 }
@@ -542,7 +525,7 @@ function renderGaps() {
   }).join('');
   document.getElementById('gaps').innerHTML = notice('warn',
     '<b>' + (bad.length === 2 ? 'Two' : bad.length) + ' of the ' + TOTAL_IN_PROFILE +
-    ' fields cannot be read from this ERP. ' +
+    ' bindings cannot be read from this ERP. ' +
     (bad.length === 1 ? 'It is' : 'Neither blocks submission and both are') + ' already covered.</b>' +
     '<ul class="small muted mt4" style="margin:0;padding-left:16px">' + list + '</ul>' +
     '<div class="small muted mt4">The fallback values above are editable in the table. ' +
@@ -551,6 +534,17 @@ function renderGaps() {
 
 /* --- filters -------------------------------------------------------------- */
 let currentTab = 'all';
+
+/* Which rows the "Derived" tab shows. Two kinds of row can qualify:
+     s.derived   the Hub works the value out from invoice data (UUID, participant
+                 ID, goods/services indicator) — different on every document
+     s.constant  the Hub sets the same value on every document for every entity
+                 (ProfileID, CustomizationID, tax scheme code)
+   Every constant row also carries derived: true. */
+function matchesDerived(s) {
+  return s.derived;
+}
+
 function applyFilter() {
   let shown = 0;
   const matched = {};
@@ -558,6 +552,7 @@ function applyFilter() {
     let match = true;
     if (currentTab === 'unresolved') match = !hasSource(s);
     else if (currentTab === 'mandatory') match = s.req === 'Mandatory';
+    else if (currentTab === 'derived') match = matchesDerived(s);
     if (match) matched[s.gi] = (matched[s.gi] || 0) + 1;
     const show = match && open[s.gi];
     document.getElementById('row-' + s.key).classList.toggle('is-hidden', !show);
@@ -658,7 +653,11 @@ document.getElementById('teachBox').innerHTML = teach(
 function refresh() {
   renderTiles();
   document.getElementById('srcJson').textContent = srcJson();
-  document.getElementById('outXml').innerHTML = xml(outXml());
+  const built = outXml();
+  document.getElementById('outXml').innerHTML = xml(built);
+  document.getElementById('outCount').textContent =
+    'UBL 2.1 \u00b7 ' + built.split('\n').length + ' lines';
+
   renderXfDemo();
   renderGaps();
   renderSaveBar();

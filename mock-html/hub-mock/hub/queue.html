@@ -6,17 +6,14 @@
 <title>Processing Queue — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
   /* ---- page-local to hub/queue.html. Do not move to app.css. ---- */
-  .ownertag{display:inline-block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  .ownertag{display:inline-block;font-size: 11.5px;letter-spacing:.06em;text-transform:uppercase;
     font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap}
   .ownertag.ent{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
   .ownertag.plat{color:var(--info);background:color-mix(in srgb,var(--info) 14%,transparent)}
-  .stagekey{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px}
-  .stagekey span{font-size:11px;color:var(--text-lo)}
-  .stagekey b{color:var(--text-mid)}
   /* two-column band: counters, filters and the stage note beside the lanes */
   .qtop{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
   /* the per-company lanes are full width now, so run them three across */
@@ -25,7 +22,6 @@
   @media (max-width:1100px){#channels{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .page-head{margin-bottom:14px}
   .card-body{padding:14px 16px}
-  .stagekey{margin-top:12px}
 </style>
 </head>
 <body class="surface-hub" data-surface="hub" data-nav="queue"
@@ -56,13 +52,12 @@
 
     <div class="card mb16">
       <div class="card-head">
-        <h2 class="grow">The eight stages</h2>
+        <h2 class="grow">The nine stages</h2>
         <span class="tag" id="stageTag"></span>
         <span class="small dim" id="clock"></span>
       </div>
       <div class="card-body">
         <div id="pipeFull"></div>
-        <div class="stagekey" id="stageKey"></div>
       </div>
     </div>
 
@@ -93,7 +88,10 @@
     <section style="margin-top:0">
       <div class="card card-tight">
         <div class="card-head">
-          <h2 class="grow">Documents today</h2>
+          <!-- "Documents today" invited the obvious question: the page says 153 in
+               flight, so why are there 13 rows? The heading now says what the list
+               actually is. -->
+          <h2 class="grow">A sample of what is in flight</h2>
           <span id="retryPill"></span>
         </div>
         <div class="table-wrap">
@@ -123,7 +121,7 @@
         <div class="card-head"><h2 class="grow">Per-company channels</h2><span class="tag">Queue depth</span></div>
         <div class="card-body" id="channels"></div>
         <div class="card-foot">
-          <span class="tiny dim">Each company has its own lane, so a backlog in one never delays another.</span>
+          <span class="tiny dim" id="chanFoot">Each company has its own lane, so a backlog in one never delays another.</span>
         </div>
       </div>
     </section>
@@ -158,23 +156,24 @@
   document.getElementById('clock').textContent = DEMO_CLOCK;
 
   /* ---------- stage breakdown ----------------------------------------------
-     STAGE_COUNT covers stages 1–7. Nothing sits at ERP writeback: it happens
-     the moment an outcome arrives.                                            */
+     STAGE_COUNT covers stages 1–7, the ones a document can be waiting at.
+     Nothing queues at the last two: the result is published the moment an
+     outcome arrives, and archiving follows it.                                */
   const busiest = STAGE_COUNT.indexOf(Math.max.apply(null, STAGE_COUNT));
-  const times   = STAGE_COUNT.map(n => `${n} ${n === 1 ? 'document' : 'documents'} here`);
-  times[STAGES.length - 1] = 'runs when an outcome arrives';
 
+  /* The stages are drawn as names only. STAGE_COUNT still drives which one is
+     marked active, and the per-stage totals are narrated in the note below
+     rather than printed under all nine labels. */
   document.getElementById('stageTag').textContent = `${num(inQueue)} documents in flight`;
-  document.getElementById('pipeFull').innerHTML = pipeline(busiest, { times });
-
-  document.getElementById('stageKey').innerHTML = STAGES.map((s, i) =>
-    `<span><b>${i + 1} ${s}</b> — ${STAGE_NOTE[i]}</span>`).join('');
+  document.getElementById('pipeFull').innerHTML = pipeline(busiest);
 
   document.getElementById('stageNote').innerHTML = teach(
     `The largest group right now is <b>${STAGES[busiest]}</b>, with ${STAGE_COUNT[busiest]} documents. ` +
-    `Note the order: <b>${STAGES[4]}</b> is step 5 — the XML and audit trail are stored <b>before</b> anything ` +
-    `is transmitted, so the compliance record exists even if transmission later fails. ` +
-    `<b>${STAGES[7]}</b> is step 8 and only runs once an outcome comes back.`);
+    `Note the order, and that two different stages write the document down. ` +
+    `<b>Record</b> is step 5: the XML and audit trail are stored <b>before</b> anything is transmitted, ` +
+    `so there is evidence of what was sent even if the transmission later fails. ` +
+    `<b>Archive</b> is step 9 — the long-term legal record in object storage, which cannot be written ` +
+    `any earlier because it holds the acknowledgements, and those only exist once the round trip is done.`);
 
   /* ---------- tiles --------------------------------------------------------- */
   const entOpen  = EXCEPTIONS_ENTITY.reduce((a, e) => a + e.count, 0);
@@ -291,6 +290,14 @@
   /* ---------- per-company channels ------------------------------------------ */
   const CH = HUB_CO.filter(t => t.pending > 0).sort((a, b) => b.pending - a.pending);
   const maxDepth = Math.max.apply(null, CH.map(t => t.pending));
+
+  /* Only a handful of lanes are drawn, and they hold a fraction of the 153.
+     Said out loud, because otherwise the card reads as the full picture and
+     the numbers visibly do not add up to the in-flight figure above. */
+  const chShown = CH.reduce((a, t) => a + t.pending, 0);
+  document.getElementById('chanFoot').textContent =
+    `The ${CH.length} deepest lanes, holding ${chShown} of the ${num(GROUP.todayPending)} documents in `
+    + `flight. Each company has its own lane, so a backlog in one never delays another.`;
 
   document.getElementById('channels').innerHTML = CH.map(t => {
     const tone = t.failed > 5 ? 'var(--fail)' : t.failed ? 'var(--warn)' : 'var(--ok)';

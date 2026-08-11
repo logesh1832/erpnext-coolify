@@ -323,17 +323,6 @@ function wsteps(names, at) {
     </div>`).join('') + `</div>`;
 }
 
-/* --- five-corner board (proposal §2) -------------------------------------- */
-function cornerBoard() {
-  return `<div class="corners">` + CORNERS.map(c => `
-    <div class="corner ${c.us ? 'is-us' : ''} ${c.n === 5 ? 'is-ota' : ''}">
-      <span class="cn">${c.n}</span>
-      <div class="ct">${c.name}</div>
-      <div class="cs">${c.sub}</div>
-      <div class="cd">${c.note}</div>
-    </div>`).join('') + `</div>`;
-}
-
 /* --- acknowledgement leg -------------------------------------------------- */
 function legRow(l) {
   const done = l.st === 'ok';

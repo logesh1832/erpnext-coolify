@@ -6,22 +6,22 @@
 <title>Group Dashboard — WJ Towell Compliance Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
   /* ---- page-local to hub/dashboard.html. Do not move to app.css. ---- */
   .silentbar{display:flex;align-items:center;gap:18px;padding:14px 16px;border-radius:var(--r-md);
     border:1px solid color-mix(in srgb, var(--fail) 45%, var(--line));
     background:color-mix(in srgb, var(--fail) 7%, var(--surface));}
-  .silentbar .snum{font-family:var(--font-mono);font-size:30px;font-weight:600;line-height:1;
+  .silentbar .snum{font-family:var(--font-mono);font-size: 33px;font-weight:600;line-height:1;
     color:var(--fail);flex:none}
   .silent-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:99px;
-    font-size:11.5px;font-weight:600;color:var(--fail);white-space:nowrap;
+    font-size: 12.5px;font-weight:600;color:var(--fail);white-space:nowrap;
     border:1px solid color-mix(in srgb, var(--fail) 40%, transparent);
     background:color-mix(in srgb, var(--fail) 10%, transparent)}
   tr.is-silent{background:color-mix(in srgb, var(--fail) 6%, transparent)}
   tr.is-silent td:first-child{box-shadow:inset 3px 0 0 var(--fail)}
-  .ownertag{display:inline-block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  .ownertag{display:inline-block;font-size: 11.5px;letter-spacing:.07em;text-transform:uppercase;
     font-weight:700;padding:3px 8px;border-radius:4px}
   .ownertag.ent{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
   .ownertag.plat{color:var(--info);background:color-mix(in srgb,var(--info) 14%,transparent)}
@@ -208,7 +208,7 @@
       stat({ label: 'Failed today', value: num(GROUP.todayFailed),
              meta: `${pct(failedPct)} of today’s documents`, tone: 'var(--fail)' }),
       stat({ label: 'In flight now', value: num(GROUP.todayPending),
-             meta: 'Moving through the eight stages', tone: 'var(--warn)' }),
+             meta: 'Moving through the nine stages', tone: 'var(--warn)' }),
       stat({ label: 'Companies live', value: `${GROUP.live}<span style="font-size:15px;color:var(--text-lo)"> / ${GROUP.entities}</span>`,
              meta: `${GROUP.onboarding} onboarding · ${GROUP.notStarted} not started`, tone: 'var(--accent)' })
     ].join('');

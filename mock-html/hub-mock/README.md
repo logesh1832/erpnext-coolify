@@ -15,41 +15,39 @@ Open `index.html` in a browser. No build step, no server, no dependencies.
 
 ## How it is meant to be used
 
-`index.html` lists the eighteen steps in six acts. Press **Start the walkthrough** and then use the
+`index.html` lists the sixteen steps in six acts. Press **Start the walkthrough** and then use the
 **Next** button in the top-right of every screen — or the **← →** arrow keys. The step navigation
 repeats at the foot of each page, naming what comes next.
 
 Every screen carries a one-line **hint strip** under the toolbar saying what the viewer is looking
 at. It can be dismissed with the × if you would rather narrate it yourself.
 
-## The eighteen steps
+## The sixteen steps
 
 | # | Screen | The one point it makes |
 |---|---|---|
 | | **I — It starts in their system** | |
 | 1 | ERP — Sales Invoices | The invoice starts in their own system, which barely changes |
-| 2 | Hub — Delivery boundary | One complete payload at the agreed interface; everything after is ours |
-| 3 | Hub — Sign in | The group platform team logs in |
+| 2 | Hub — Sign in | The group platform team logs in |
 | | **II — The group, and the companies in it** | |
-| 4 | Hub — Group Dashboard | All 89 companies, including the ones that have gone quiet |
-| 5 | Hub — Companies | How each connects, which wave, which are self-hosted |
-| 6 | Hub — Company detail | What that entity supplied, and what we run from there |
+| 3 | Hub — Group Dashboard | All 89 companies, including the ones that have gone quiet |
+| 4 | Hub — Companies | How each connects, which wave, which are self-hosted |
+| 5 | Hub — Company detail | What that entity supplied, and what we run from there |
 | | **III — Bringing a company on** | |
-| 7 | Hub — Onboard a Company | Choose the connection method, enter details, test it live |
-| 8 | Hub — Mapping Studio | Their fields pointed at the standard ones — typed and chosen |
-| 9 | Hub — Users & Access | How each of the 89 gets its own login, and who administers it |
+| 6 | Hub — Onboard a Company | Choose the connection method, enter details, test it live |
+| 7 | Hub — Mapping Studio | Their fields pointed at the standard ones — typed and chosen |
+| 8 | Hub — Users & Access | How each of the 89 gets its own login, and who administers it |
 | | **IV — One invoice, end to end** | |
-| 10 | Hub — Processing Queue | Where every document is, across the eight stages |
-| 11 | Hub — Document Inspector | The XML, proven correct before anything is sent |
-| 12 | Hub — ASP Exchange | Five corners, three acknowledgements, three separate legs |
+| 9 | Hub — Processing Queue | Where every document is, across the nine stages |
+| 10 | Hub — Document Inspector | The XML, proven correct before anything is sent |
 | | **V — The other direction, and the record** | |
-| 13 | Hub — Inbound Documents | Supplier invoices routed, archived, landed as drafts |
-| 14 | Hub — Processing History | Both directions, and what the archive holds |
-| 15 | Hub — Reports | VAT summaries, reporting completeness, exception ageing |
+| 11 | Hub — Inbound Documents | Supplier invoices routed, archived, landed as drafts |
+| 12 | Hub — Processing History | Both directions, and what the archive holds |
+| 13 | Hub — Reports | VAT summaries, reporting completeness, exception ageing |
 | | **VI — What each company sees** | |
-| 16 | Portal — Sign in | A single company has its own login |
-| 17 | Portal — Overview | It sees only its own data; the other 88 are invisible |
-| 18 | ERP — Status Sync | The acknowledgement lands back on the original invoice |
+| 14 | Portal — Sign in | A single company has its own login |
+| 15 | Portal — Overview | It sees only its own data; the other 88 are invisible |
+| 16 | ERP — Status Sync | The acknowledgement lands back on the original invoice |
 
 ## Three surfaces, three colours
 
@@ -57,7 +55,7 @@ All light. The colour tells the viewer which system they are in without anyone h
 
 | Surface | Colour | Screens | Reads as |
 |---|---|---|---|
-| **ERP** | Neutral graphite | 1, 18 | *Their existing system — deliberately unbranded* |
+| **ERP** | Neutral graphite | 1, 16 | *Their existing system — deliberately unbranded* |
 | **Hub** | Towell navy `#1F4585` + group gold `#EDAF4A` | 2–15 | *The platform we are building* |
 | **Portal** | Towell footer green `#143331` | 16, 17 | *One company's own workspace* |
 
@@ -68,7 +66,7 @@ for it as the closest webfont. Body text is Archivo (their site uses Arial), and
 carries every identifier, amount and XML fragment.
 
 The ERP surface is the one deliberate exception — it stays neutral grey, because the point of
-screens 1 and 18 is that their existing system barely changes. If it wore the group brand it would
+screens 1 and 16 is that their existing system barely changes. If it wore the group brand it would
 look like something we built.
 
 Entity isolation is shown rather than asserted: the portal is visibly simpler than the console, and
@@ -108,7 +106,7 @@ And several things it is emphatic about, which the prototype must get right:
 
 ## Structure
 
-    index.html              the six acts and eighteen steps — the entry point
+    index.html              the six acts and sixteen steps — the entry point
     GAP-REGISTER.md         audit of the prototype against the proposal
     assets/css/app.css      design system: tokens for the three surfaces, every component
     assets/js/data.js       the demonstration dataset
@@ -159,7 +157,7 @@ Thursday, so a busy weekday has to fall inside it.
 
 - Every number on screen is derived from `data.js` or computed in the page. Totals reconcile with
   the rows above them, and the same figure does not disagree with itself across two screens.
-- Screens 11 and 12 follow the same invoice through consecutive stages. Screens 1, 17 and 18 all
+- Screens 9 and 10 follow the same invoice through consecutive stages. Screens 1, 15 and 16 all
   show `TAC-SINV-2026-04471`, so the walkthrough closes a loop on one document.
 - The mapping screen is genuinely operable. Changing a transform recomputes the preview — switching
   the buyer name from `trim|upper` to `trim` visibly changes its case. That interaction is the

@@ -6,30 +6,64 @@
 <title>E-Invoice Status — Towell Auto Centre ERP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/app.css">
 <style>
   /* page-local — closing panel for the final screen of the walkthrough */
   .closing { background: var(--accent-soft); border-color: var(--accent-line); }
   .closing-list { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 7px;
-                  font-size: 13px; line-height: 1.6; color: var(--text-mid); }
+                  font-size: 14.5px; line-height: 1.6; color: var(--text-mid); }
   .closing-list li::marker { color: var(--accent); font-weight: 700; }
   /* page-local — the eight journey steps, as a compact two-column reading list */
   .jsteps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; }
   .jstep { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 9px; align-items: start; }
   .jstep .jn { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center;
-               font-size: 10.5px; font-weight: 700; color: var(--ok);
+               font-size: 11.5px; font-weight: 700; color: var(--ok);
                background: color-mix(in srgb, var(--ok) 14%, transparent); }
-  .jstep .jt { font-size: 12.5px; font-weight: 600; }
-  .jstep .jw { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-lo); }
-  .jstep .jb { font-size: 11.5px; color: var(--text-mid); line-height: 1.55; margin-top: 3px; }
+  .jstep .jt { font-size: 14px; font-weight: 600; }
+  .jstep .jw { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-lo); }
+  .jstep .jb { font-size: 12.5px; color: var(--text-mid); line-height: 1.55; margin-top: 3px; }
   @media (max-width: 900px) { .jsteps { grid-template-columns: minmax(0, 1fr); } }
+
+  /* page-local — SCOPE BOUNDARY.
+     This is the one screen in the walkthrough that shows something we are not
+     contracted to build. It sits above the success banner, not below it: a
+     viewer who reads only the first block on the page must still come away
+     knowing the write-back is theirs to build. Red is used nowhere else on
+     this screen, so it cannot be mistaken for ordinary status colour. */
+  .scope {
+    border: 2px solid var(--fail); border-radius: var(--r-md);
+    background: color-mix(in srgb, var(--fail) 6%, var(--surface));
+    padding: 15px 17px; margin-bottom: 16px;
+  }
+  .scope-head { display: flex; gap: 10px; align-items: flex-start; }
+  .scope-head > svg { width: 19px; height: 19px; color: var(--fail); flex: none; margin-top: 1px; }
+  .scope-title { font-size: 16px; font-weight: 700; color: var(--fail); letter-spacing: -.012em; line-height: 1.35; }
+  .scope-lead  { font-size: 14px; color: var(--text-mid); line-height: 1.62; margin-top: 7px; }
+  .scope-list  { list-style: none; margin: 13px 0 0; padding: 0; display: grid; gap: 9px; }
+  .scope-list li {
+    display: grid; grid-template-columns: 15px minmax(0, 1fr); gap: 9px; align-items: start;
+    font-size: 14px; line-height: 1.58; color: var(--text-hi);
+  }
+  .scope-list li::before {
+    content: ""; width: 7px; height: 7px; margin: 6px 0 0 4px; border-radius: 2px;
+    background: var(--fail);
+  }
+  .scope-list b { color: var(--fail); font-weight: 700; }
+  .scope-foot {
+    margin-top: 13px; padding-top: 11px; border-top: 1px solid color-mix(in srgb, var(--fail) 28%, transparent);
+    font-size: 13px; color: var(--text-mid); line-height: 1.6;
+  }
+  .pill-scope {
+    color: #A2351F; background: color-mix(in srgb, var(--fail) 7%, transparent);
+    border-color: color-mix(in srgb, var(--fail) 34%, transparent);
+  }
 </style>
 </head>
 <body class="surface-erp" data-surface="erp" data-nav="sync"
       data-step="erp-sync"
       data-crumbs="E-Invoicing / TAC-SINV-2026-04471"
-      data-hint="The last screen. The same invoice from step 1, now carrying its reference, its status and its QR information — written back automatically.">
+      data-hint="The last screen, and the one boundary to be clear about: the ERP-side write-back shown here is not in our scope. Read the red note before anything else on this page.">
 
 <main class="main">
   <div class="page">
@@ -40,12 +74,56 @@
           <h1>Sales Invoice TAC-SINV-2026-04471</h1>
           <span class="pill pill-ok"><i class="dot"></i>Acknowledged</span>
           <span class="tag">Towell Auto Centre LLC</span>
+          <span class="pill pill-scope"><i class="dot"></i>ERP-side work — not in scope</span>
         </div>
-        <p class="page-sub">The same ERP record the walkthrough started with, now carrying its e-invoicing outcome.</p>
+        <p class="page-sub">The same ERP record the walkthrough started with, showing the e-invoicing
+          outcome as it would appear. The ERP-side work that puts it there is not ours to build.</p>
       </div>
       <div class="page-actions">
         <button class="btn btn-sm" id="btnPrint">Print with QR</button>
         <a class="btn btn-sm btn-primary" href="../hub/document.html">View in Hub</a>
+      </div>
+    </div>
+
+    <!-- ===================== SCOPE BOUNDARY — READ FIRST =====================
+         Deliberately placed above the green success banner. Everything below
+         it illustrates an outcome; this states who has to build that outcome. -->
+    <div class="scope">
+      <div class="scope-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 9v4.5M12 17.2h.01"/>
+          <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+        </svg>
+        <div class="grow">
+          <div class="scope-title">This screen is an illustration. Writing these values back into the
+            ERP is <u>not</u> included in our scope of work.</div>
+          <div class="scope-lead">
+            The Compliance Hub makes every field shown below available to the ERP. Reading them from
+            the Hub, and creating or updating any record inside the ERP, is work that belongs to
+            Towell's ERP team or their ERP vendor — not to us.
+          </div>
+        </div>
+      </div>
+
+      <ul class="scope-list">
+        <li><span><b>We do not build anything inside the ERP.</b> No app, connector, customisation or
+          print format on the ERP side is part of the current proposal. What we deliver ends at the
+          Hub's interface.</span></li>
+        <li><span><b>The ERP team collects the data and writes the record.</b> They call the Hub, take
+          the reference, the status and the QR information, and perform the insert or update on their
+          own system, in their own release cycle.</span></li>
+        <li><span><b>Inbound supplier invoices must be created as drafts.</b> When the Hub passes a
+          supplier invoice to the ERP, the ERP team must create it as an unposted draft for a person to
+          review. Nothing may be posted automatically.</span></li>
+        <li><span><b>If Towell wants us to build it, it is quoted separately.</b> Scope, effort,
+          timeline and cost for the ERP-side work are estimated as a separate engagement and are not
+          covered by the figures in this proposal.</span></li>
+      </ul>
+
+      <div class="scope-foot">
+        Everything on this screen uses sample data to show what the finished result would look like on
+        the ERP record. It is not a working integration, and no software on this page has been built.
       </div>
     </div>
 
@@ -63,7 +141,8 @@
 
           <div class="card">
             <div class="card-head">
-              <h2 class="grow">E-Invoicing fields written back by the Hub</h2>
+              <h2 class="grow">E-Invoicing fields collected from the Hub</h2>
+              <span class="pill pill-scope"><i class="dot"></i>Illustration</span>
               <span class="pill pill-accent">
                 <svg style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
                 Read-only</span>
@@ -144,10 +223,14 @@
             <li>It was mapped, built as UBL 2.1, validated against the Oman rules and archived.</li>
             <li>The Hub transmitted it to the group's accredited service provider, which reported it
                 to the Oman Tax Authority and delivered it to the buyer.</li>
-            <li>Its reference, its status and its QR information are now on the original record —
-                the same screen the finance team already uses.</li>
+            <li>Its reference, its status and its QR information are ready to be collected from the
+                Hub, so they can be shown on the original record — the same screen the finance team
+                already uses.</li>
           </ol>
           <p class="small muted mt12">Nothing was exported by hand, and nobody had to leave the ERP.</p>
+          <p class="small mt8" style="color:#9A3320;font-weight:650">
+            Step 4 is the ERP team's work, not ours. Our delivery ends where the Hub publishes the
+            data. Building the ERP side is a separately scoped, separately costed piece of work.</p>
           <div class="row-tight mt16" style="gap:8px">
             <a class="btn" href="invoices.html">↺ Start again from the ERP</a>
             <a class="btn btn-primary" href="../index.html">Screen map</a>
@@ -179,7 +262,7 @@
   document.getElementById('journeyElapsed').textContent = 'End to end ' + human(elapsed);
 
   document.getElementById('journey').innerHTML = pipeline(J.length, {
-    stages: ['Submitted', 'Collected', 'Validated', 'Archived', 'Transmitted', 'Outcomes', 'Written back', 'QR on the invoice'],
+    stages: ['Submitted', 'Collected', 'Validated', 'Recorded', 'Transmitted', 'Outcomes', 'Published', 'QR on the invoice'],
     times:  J.map(hhmmss)
   });
 
@@ -194,9 +277,13 @@
         </div>
       </div>`).join('') + '</div>';
 
-  document.getElementById('journeyFoot').textContent =
-    'Step 1 happened in this ERP. Steps 2 to ' + J.length + ' were performed by the Compliance Hub and the '
-    + 'group’s service provider, with no user action here.';
+  /* The last step lands inside the ERP, so it is attributed to the ERP team —
+     it is the one step in this list that our scope does not cover. */
+  document.getElementById('journeyFoot').innerHTML =
+    'Step 1 happened in this ERP. Steps 2 to ' + (J.length - 1) + ' are performed by the Compliance Hub '
+    + 'and the group’s service provider, with no user action here. '
+    + '<b style="color:var(--fail)">Step ' + J.length + ' is built and run by the ERP team — it is not '
+    + 'part of our scope.</b>';
 
   /* ---- banner: who did what -----------------------------------------------
      The Hub transmits to the ASP. The ASP — corner 2 — reports the Tax Data
